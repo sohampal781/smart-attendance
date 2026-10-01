@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Smart Lab Attendance | Admin</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Arial, Helvetica, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 430px;
+            padding: 20px;
+        }
+
+        .card {
+            background: #ffffff;
+            color: #1e293b;
+            border-radius: 18px;
+            padding: 35px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+        }
+
+        .logo {
+            width: 70px;
+            height: 70px;
+            margin: 0 auto 18px;
+            border-radius: 18px;
+            background: #2563eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: bold;
+            color: white;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 25px;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 30px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 7px;
+        }
+
+        input {
+            width: 100%;
+            padding: 13px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 9px;
+            outline: none;
+            font-size: 15px;
+            transition: 0.2s;
+        }
+
+        input:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+        }
+
+        .password-wrapper {
+            position: relative;
+        }
+
+        .password-wrapper input {
+            padding-right: 48px;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 13px;
+            top: 50%;
+            transform: translateY(-50%);
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 9px;
+            background: #2563eb;
+            color: white;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .login-btn:hover {
+            background: #1d4ed8;
+        }
+
+        .login-btn:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+        }
+
+        .message {
+            display: none;
+            margin-top: 15px;
+            padding: 11px 13px;
+            border-radius: 8px;
+            font-size: 13px;
+            line-height: 1.4;
+        }
+
+        .error {
+            display: block;
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .success {
+            display: block;
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 22px;
+            font-size: 12px;
+            color: #94a3b8;
+        }
+
+        .security-note {
+            margin-top: 20px;
+            padding: 12px;
+            background: #f8fafc;
+            border-radius: 8px;
+            color: #64748b;
+            font-size: 11px;
+            line-height: 1.5;
+            text-align: center;
+        }
+
+        .loading {
+            display: none;
+            width: 17px;
+            height: 17px;
+            border: 2px solid rgba(255,255,255,0.4);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .card {
+                padding: 28px 22px;
+            }
+
+            h1 {
+                font-size: 22px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="card">
+
+        <div class="logo">
+            SA
+        </div>
+
+        <h1>Smart Lab Attendance</h1>
+
+        <div class="subtitle">
+            Administrator Login
+        </div>
+
+        <form id="loginForm">
+
+            <div class="form-group">
+                <label for="email">Admin Email</label>
+
+                <input
+                    type="email"
+                    id="email"
+                    placeholder="Enter admin email"
+                    autocomplete="username"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+
+                <label for="password">Password</label>
+
+                <div class="password-wrapper">
+
+                    <input
+                        type="password"
+                        id="password"
+                        placeholder="Enter password"
+                        autocomplete="current-password"
+                        required
+                    >
+
+                    <button
+                        type="button"
+                        class="toggle-password"
+                        id="togglePassword"
+                        aria-label="Show password"
+                    >
+                        👁
+                    </button>
+
+                </div>
+
+            </div>
+
+            <button
+                type="submit"
+                class="login-btn"
+                id="loginBtn"
+            >
+                <span id="loginText">LOGIN</span>
+                <span class="loading" id="loading"></span>
+            </button>
+
+            <div
+                id="message"
+                class="message"
+            ></div>
+
+        </form>
+
+        <div class="security-note">
+            Authorized administrators only.<br>
+            All class, student and attendance records are protected.
+        </div>
+
+    </div>
+
+    <div class="footer">
+        Smart Image Processing Based Attendance System
+    </div>
+
+</div>
+
+
+<script type="module">
+
+    import { initializeApp }
+        from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+
+    import {
+        getAuth,
+        signInWithEmailAndPassword,
+        onAuthStateChanged
+    }
+    from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+
+    import {
+        getDatabase,
+        ref,
+        get
+    }
+    from "https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js";
+
+
+    // ============================================================
+    // FIREBASE CONFIGURATION
+    // ============================================================
+
+    const firebaseConfig = {
+
+        apiKey: "AIzaSyCPixQatVPa326_yGej41aD9p5Z5Fyt3Lg",
+
+        authDomain:
+            "kolkata-metro-fine.firebaseapp.com",
+
+        databaseURL:
+            "https://kolkata-metro-fine-default-rtdb.firebaseio.com",
+
+        projectId:
+            "kolkata-metro-fine",
+
+        storageBucket:
+            "kolkata-metro-fine.firebasestorage.app",
+
+        messagingSenderId:
+            "835007350697",
+
+        appId:
+            "1:835007350697:web:8f359ed3fd8c0805ea66b8"
+    };
+
+
+    // ============================================================
+    // INITIALIZE FIREBASE
+    // ============================================================
+
+    const app = initializeApp(firebaseConfig);
+
+    const auth = getAuth(app);
+
+    const db = getDatabase(app);
+
+
+    // ============================================================
+    // DOM ELEMENTS
+    // ============================================================
+
+    const loginForm =
+        document.getElementById("loginForm");
+
+    const emailInput =
+        document.getElementById("email");
+
+    const passwordInput =
+        document.getElementById("password");
+
+    const loginBtn =
+        document.getElementById("loginBtn");
+
+    const loginText =
+        document.getElementById("loginText");
+
+    const loading =
+        document.getElementById("loading");
+
+    const message =
+        document.getElementById("message");
+
+    const togglePassword =
+        document.getElementById("togglePassword");
+
+
+    // ============================================================
+    // SHOW MESSAGE
+    // ============================================================
+
+    function showMessage(text, type = "error") {
+
+        message.textContent = text;
+
+        message.className =
+            "message " + type;
+    }
+
+
+    // ============================================================
+    // CLEAR MESSAGE
+    // ============================================================
+
+    function clearMessage() {
+
+        message.textContent = "";
+
+        message.className = "message";
+    }
+
+
+    // ============================================================
+    // LOADING STATE
+    // ============================================================
+
+    function setLoading(state) {
+
+        loginBtn.disabled = state;
+
+        if (state) {
+
+            loginText.style.display = "none";
+
+            loading.style.display = "block";
+
+        } else {
+
+            loginText.style.display = "inline";
+
+            loading.style.display = "none";
+        }
+    }
+
+
+    // ============================================================
+    // SHOW / HIDE PASSWORD
+    // ============================================================
+
+    togglePassword.addEventListener("click", () => {
+
+        if (passwordInput.type === "password") {
+
+            passwordInput.type = "text";
+
+            togglePassword.textContent = "🙈";
+
+        } else {
+
+            passwordInput.type = "password";
+
+            togglePassword.textContent = "👁";
+        }
+
+    });
+
+
+    // ============================================================
+    // LOGIN
+    // ============================================================
+
+    loginForm.addEventListener("submit", async (event) => {
+
+        event.preventDefault();
+
+        clearMessage();
+
+        const email =
+            emailInput.value.trim();
+
+        const password =
+            passwordInput.value;
+
+
+        if (!email || !password) {
+
+            showMessage(
+                "Please enter email and password."
+            );
+
+            return;
+        }
+
+
+        setLoading(true);
+
+
+        try {
+
+            const userCredential =
+                await signInWithEmailAndPassword(
+                    auth,
+                    email,
+                    password
+                );
+
+
+            const user =
+                userCredential.user;
+
+
+            // ----------------------------------------------------
+            // CHECK ADMIN RECORD
+            // ----------------------------------------------------
+
+            const adminRef =
+                ref(
+                    db,
+                    "admins/" + user.uid
+                );
+
+
+            const snapshot =
+                await get(adminRef);
+
+
+            if (!snapshot.exists()) {
+
+                await auth.signOut();
+
+                showMessage(
+                    "This account is authenticated but is not registered as an administrator."
+                );
+
+                setLoading(false);
+
+                return;
+            }
+
+
+            const adminData =
+                snapshot.val();
+
+
+            if (
+                adminData.active === false
+            ) {
+
+                await auth.signOut();
+
+                showMessage(
+                    "This administrator account has been disabled."
+                );
+
+                setLoading(false);
+
+                return;
+            }
+
+
+            // ----------------------------------------------------
+            // LOGIN SUCCESS
+            // ----------------------------------------------------
+
+            showMessage(
+                "Login successful. Opening dashboard...",
+                "success"
+            );
+
+
+            setTimeout(() => {
+
+                window.location.href =
+                    "classes.html";
+
+            }, 700);
+
+
+        } catch (error) {
+
+            console.error(
+                "Firebase login error:",
+                error
+            );
+
+
+            let errorMessage =
+                "Login failed. Please try again.";
+
+
+            switch (error.code) {
+
+                case "auth/invalid-credential":
+
+                    errorMessage =
+                        "Invalid email or password.";
+
+                    break;
+
+
+                case "auth/user-not-found":
+
+                    errorMessage =
+                        "No administrator account exists with this email.";
+
+                    break;
+
+
+                case "auth/wrong-password":
+
+                    errorMessage =
+                        "Incorrect password.";
+
+                    break;
+
+
+                case "auth/invalid-email":
+
+                    errorMessage =
+                        "Please enter a valid email address.";
+
+                    break;
+
+
+                case "auth/too-many-requests":
+
+                    errorMessage =
+                        "Too many failed attempts. Please try again later.";
+
+                    break;
+
+
+                case "auth/network-request-failed":
+
+                    errorMessage =
+                        "Network error. Check your internet connection.";
+
+                    break;
+            }
+
+
+            showMessage(errorMessage);
+
+            setLoading(false);
+        }
+
+    });
+
+
+    // ============================================================
+    // CHECK EXISTING LOGIN
+    // ============================================================
+
+    onAuthStateChanged(
+        auth,
+        async (user) => {
+
+            if (!user) {
+                return;
+            }
+
+
+            try {
+
+                const adminRef =
+                    ref(
+                        db,
+                        "admins/" + user.uid
+                    );
+
+
+                const snapshot =
+                    await get(adminRef);
+
+
+                if (
+                    snapshot.exists() &&
+                    snapshot.val().active !== false
+                ) {
+
+                    window.location.href =
+                        "classes.html";
+                }
+
+            } catch (error) {
+
+                console.error(
+                    "Admin verification error:",
+                    error
+                );
+
+            }
+
+        }
+    );
+
+</script>
+
+</body>
+</html>
