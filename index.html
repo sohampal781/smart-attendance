@@ -1,11 +1,10 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Smart Lab Attendance - Admin</title>
+    <title>Smart Lab Attendance - Admin Login</title>
 
     <style>
         * {
@@ -22,60 +21,60 @@
             background: #0f172a;
         }
 
-        .login-box {
+        .box {
             width: 390px;
             max-width: calc(100% - 30px);
-            background: white;
+            background: #fff;
             padding: 35px;
-            border-radius: 16px;
+            border-radius: 18px;
             box-shadow: 0 20px 60px rgba(0,0,0,.35);
         }
 
         .logo {
-            width: 65px;
-            height: 65px;
-            margin: auto;
-            border-radius: 16px;
+            width: 70px;
+            height: 70px;
+            margin: 0 auto 18px;
+            border-radius: 18px;
             background: #2563eb;
             color: white;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 25px;
+            font-size: 26px;
             font-weight: bold;
         }
 
         h1 {
             text-align: center;
-            margin: 18px 0 5px;
-            color: #0f172a;
+            margin: 0;
             font-size: 24px;
+            color: #0f172a;
         }
 
         .subtitle {
             text-align: center;
             color: #64748b;
             font-size: 14px;
-            margin-bottom: 28px;
+            margin: 7px 0 28px;
         }
 
         label {
             display: block;
-            margin-bottom: 7px;
             font-size: 14px;
             font-weight: bold;
             color: #334155;
+            margin-bottom: 7px;
         }
 
         input {
             width: 100%;
-            height: 46px;
+            height: 47px;
             padding: 0 13px;
+            margin-bottom: 18px;
             border: 1px solid #cbd5e1;
             border-radius: 8px;
             font-size: 15px;
             outline: none;
-            margin-bottom: 18px;
         }
 
         input:focus {
@@ -84,7 +83,7 @@
 
         button {
             width: 100%;
-            height: 47px;
+            height: 48px;
             border: none;
             border-radius: 8px;
             background: #2563eb;
@@ -113,16 +112,16 @@
             word-break: break-word;
         }
 
-        .error {
-            display: block !important;
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
         .success {
             display: block !important;
             background: #dcfce7;
             color: #166534;
+        }
+
+        .error {
+            display: block !important;
+            background: #fee2e2;
+            color: #991b1b;
         }
 
         .info {
@@ -131,23 +130,25 @@
             color: #1e40af;
         }
 
-        .uid-box {
-            margin-top: 15px;
+        .uid {
+            margin-top: 20px;
             padding: 10px;
             background: #f1f5f9;
             border-radius: 7px;
-            font-size: 11px;
+            font-size: 10px;
+            color: #64748b;
             word-break: break-all;
-            color: #475569;
         }
     </style>
 </head>
 
 <body>
 
-<div class="login-box">
+<div class="box">
 
-    <div class="logo">SA</div>
+    <div class="logo">
+        SA
+    </div>
 
     <h1>Smart Lab Attendance</h1>
 
@@ -157,17 +158,21 @@
 
     <form id="loginForm">
 
-        <label>Email</label>
+        <label for="email">
+            Admin Email
+        </label>
 
         <input
             id="email"
             type="email"
-            placeholder="admin@admin.com"
             value="admin@admin.com"
+            placeholder="Admin email"
             required
         >
 
-        <label>Password</label>
+        <label for="password">
+            Password
+        </label>
 
         <input
             id="password"
@@ -176,7 +181,10 @@
             required
         >
 
-        <button id="loginButton" type="submit">
+        <button
+            id="loginButton"
+            type="submit"
+        >
             LOGIN
         </button>
 
@@ -184,8 +192,8 @@
 
     <div id="message"></div>
 
-    <div id="uidBox" class="uid-box">
-        Expected Admin UID:<br>
+    <div class="uid">
+        Authorized Admin UID:<br>
         gyXPDTeJARgh1DdLUTO8h2k5Th92
     </div>
 
@@ -193,10 +201,6 @@
 
 
 <script type="module">
-
-    // =========================================================
-    // FIREBASE
-    // =========================================================
 
     import {
         initializeApp
@@ -208,16 +212,10 @@
         signOut
     } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 
-    import {
-        getDatabase,
-        ref,
-        get
-    } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js";
 
-
-    // =========================================================
-    // CONFIG
-    // =========================================================
+    // ==========================================================
+    // FIREBASE CONFIG
+    // ==========================================================
 
     const firebaseConfig = {
 
@@ -244,17 +242,17 @@
     };
 
 
-    // =========================================================
+    // ==========================================================
     // ADMIN UID
-    // =========================================================
+    // ==========================================================
 
     const ADMIN_UID =
         "gyXPDTeJARgh1DdLUTO8h2k5Th92";
 
 
-    // =========================================================
+    // ==========================================================
     // INITIALIZE
-    // =========================================================
+    // ==========================================================
 
     const app =
         initializeApp(firebaseConfig);
@@ -262,13 +260,10 @@
     const auth =
         getAuth(app);
 
-    const db =
-        getDatabase(app);
 
-
-    // =========================================================
+    // ==========================================================
     // ELEMENTS
-    // =========================================================
+    // ==========================================================
 
     const form =
         document.getElementById("loginForm");
@@ -286,13 +281,13 @@
         document.getElementById("message");
 
 
-    // =========================================================
+    // ==========================================================
     // MESSAGE
-    // =========================================================
+    // ==========================================================
 
     function showMessage(
         text,
-        type = "error"
+        type
     ) {
 
         message.textContent = text;
@@ -301,40 +296,30 @@
     }
 
 
-    // =========================================================
+    // ==========================================================
     // LOGIN
-    // =========================================================
+    // ==========================================================
 
     form.addEventListener(
         "submit",
-        async (event) => {
+        async function(event) {
 
             event.preventDefault();
-
-            message.className = "";
-
-            message.textContent = "";
 
             button.disabled = true;
 
             button.textContent =
-                "Checking...";
+                "AUTHENTICATING...";
 
+            message.className = "";
 
             try {
 
-                // =================================================
-                // STEP 1
-                // FIREBASE AUTHENTICATION
-                // =================================================
+                // ------------------------------------------------
+                // FIREBASE LOGIN
+                // ------------------------------------------------
 
-                showMessage(
-                    "Authenticating...",
-                    "info"
-                );
-
-
-                const result =
+                const credential =
                     await signInWithEmailAndPassword(
                         auth,
                         email.value.trim(),
@@ -343,28 +328,18 @@
 
 
                 const user =
-                    result.user;
+                    credential.user;
 
 
                 console.log(
-                    "LOGIN SUCCESS"
-                );
-
-                console.log(
-                    "Email:",
-                    user.email
-                );
-
-                console.log(
-                    "UID:",
+                    "Firebase UID:",
                     user.uid
                 );
 
 
-                // =================================================
-                // STEP 2
-                // UID CHECK
-                // =================================================
+                // ------------------------------------------------
+                // UID VERIFICATION
+                // ------------------------------------------------
 
                 if (
                     user.uid !== ADMIN_UID
@@ -373,111 +348,23 @@
                     await signOut(auth);
 
                     throw new Error(
-                        "Wrong Firebase account. Logged-in UID is: " +
-                        user.uid +
-                        " but expected UID is: " +
-                        ADMIN_UID
+                        "This Firebase account is not the authorized administrator."
                     );
                 }
 
 
-                // =================================================
-                // STEP 3
-                // DATABASE ADMIN RECORD
-                // =================================================
+                // ------------------------------------------------
+                // LOGIN SUCCESS
+                // ------------------------------------------------
 
                 showMessage(
-                    "Authentication successful. Checking admin record...",
-                    "info"
-                );
-
-
-                const adminReference =
-                    ref(
-                        db,
-                        "admins/" + ADMIN_UID
-                    );
-
-
-                const snapshot =
-                    await get(adminReference);
-
-
-                console.log(
-                    "Database path:",
-                    "admins/" + ADMIN_UID
-                );
-
-
-                if (!snapshot.exists()) {
-
-                    await signOut(auth);
-
-                    throw new Error(
-                        "ADMIN RECORD NOT FOUND.\n\n" +
-                        "Create this exact database path:\n\n" +
-                        "admins/" +
-                        ADMIN_UID
-                    );
-                }
-
-
-                const admin =
-                    snapshot.val();
-
-
-                console.log(
-                    "Admin data:",
-                    admin
-                );
-
-
-                // =================================================
-                // STEP 4
-                // ACTIVE CHECK
-                // =================================================
-
-                if (
-                    admin.active !== true
-                ) {
-
-                    await signOut(auth);
-
-                    throw new Error(
-                        "Admin account exists but active is not true."
-                    );
-                }
-
-
-                // =================================================
-                // STEP 5
-                // ROLE CHECK
-                // =================================================
-
-                if (
-                    admin.role !== "admin"
-                ) {
-
-                    await signOut(auth);
-
-                    throw new Error(
-                        "Admin record exists but role is not 'admin'."
-                    );
-                }
-
-
-                // =================================================
-                // SUCCESS
-                // =================================================
-
-                showMessage(
-                    "Login successful. Opening dashboard...",
+                    "Administrator verified. Opening dashboard...",
                     "success"
                 );
 
 
                 setTimeout(
-                    () => {
+                    function() {
 
                         window.location.href =
                             "classes.html";
@@ -487,28 +374,25 @@
                 );
 
 
-            } catch (error) {
+            } catch(error) {
 
                 console.error(
-                    "LOGIN ERROR:",
+                    "Login error:",
                     error
                 );
 
 
-                let errorText =
-                    error.message ||
+                let text =
                     "Login failed.";
 
-
-                // Firebase authentication errors
 
                 if (
                     error.code ===
                     "auth/invalid-credential"
                 ) {
 
-                    errorText =
-                        "Invalid email or password.";
+                    text =
+                        "Incorrect email or password.";
                 }
 
                 else if (
@@ -516,7 +400,7 @@
                     "auth/invalid-email"
                 ) {
 
-                    errorText =
+                    text =
                         "Invalid email address.";
                 }
 
@@ -525,8 +409,8 @@
                     "auth/too-many-requests"
                 ) {
 
-                    errorText =
-                        "Too many failed login attempts. Try again later.";
+                    text =
+                        "Too many attempts. Try again later.";
                 }
 
                 else if (
@@ -534,22 +418,21 @@
                     "auth/network-request-failed"
                 ) {
 
-                    errorText =
+                    text =
                         "Network error. Check your internet connection.";
                 }
 
                 else if (
-                    error.code ===
-                    "PERMISSION_DENIED"
+                    error.message
                 ) {
 
-                    errorText =
-                        "Realtime Database permission denied.";
+                    text =
+                        error.message;
                 }
 
 
                 showMessage(
-                    errorText,
+                    text,
                     "error"
                 );
 
