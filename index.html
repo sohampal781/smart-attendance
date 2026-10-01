@@ -1,450 +1,3379 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Smart Lab Attendance - Admin Login</title>
+<title>Smart Lab Attendance System</title>
 
-    <style>
-        * {
-            box-sizing: border-box;
-        }
+<style>
 
-        body {
-            margin: 0;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: Arial, sans-serif;
-            background: #0f172a;
-        }
+/* =========================================================
+   GLOBAL
+========================================================= */
 
-        .box {
-            width: 390px;
-            max-width: calc(100% - 30px);
-            background: #fff;
-            padding: 35px;
-            border-radius: 18px;
-            box-shadow: 0 20px 60px rgba(0,0,0,.35);
-        }
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
 
-        .logo {
-            width: 70px;
-            height: 70px;
-            margin: 0 auto 18px;
-            border-radius: 18px;
-            background: #2563eb;
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 26px;
-            font-weight: bold;
-        }
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: #f1f5f9;
+    color: #0f172a;
+}
 
-        h1 {
-            text-align: center;
-            margin: 0;
-            font-size: 24px;
-            color: #0f172a;
-        }
+button,
+input,
+select {
+    font: inherit;
+}
 
-        .subtitle {
-            text-align: center;
-            color: #64748b;
-            font-size: 14px;
-            margin: 7px 0 28px;
-        }
+button {
+    cursor: pointer;
+}
 
-        label {
-            display: block;
-            font-size: 14px;
-            font-weight: bold;
-            color: #334155;
-            margin-bottom: 7px;
-        }
 
-        input {
-            width: 100%;
-            height: 47px;
-            padding: 0 13px;
-            margin-bottom: 18px;
-            border: 1px solid #cbd5e1;
-            border-radius: 8px;
-            font-size: 15px;
-            outline: none;
-        }
+/* =========================================================
+   LOGIN
+========================================================= */
 
-        input:focus {
-            border-color: #2563eb;
-        }
+#loginPage {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background:
+        linear-gradient(
+            135deg,
+            #0f172a,
+            #1d4ed8
+        );
+}
 
-        button {
-            width: 100%;
-            height: 48px;
-            border: none;
-            border-radius: 8px;
-            background: #2563eb;
-            color: white;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-        }
+.login-card {
+    width: 410px;
+    max-width: calc(100% - 30px);
+    background: white;
+    padding: 35px;
+    border-radius: 20px;
+    box-shadow: 0 25px 70px rgba(0,0,0,.35);
+}
 
-        button:hover {
-            background: #1d4ed8;
-        }
+.login-logo {
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 18px;
+    border-radius: 18px;
+    background: #2563eb;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 28px;
+}
 
-        button:disabled {
-            opacity: .6;
-            cursor: not-allowed;
-        }
+.login-card h1 {
+    text-align: center;
+    font-size: 25px;
+}
 
-        #message {
-            display: none;
-            margin-top: 18px;
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 13px;
-            line-height: 1.5;
-            word-break: break-word;
-        }
+.login-subtitle {
+    text-align: center;
+    color: #64748b;
+    margin: 8px 0 28px;
+    font-size: 14px;
+}
 
-        .success {
-            display: block !important;
-            background: #dcfce7;
-            color: #166534;
-        }
+.form-group {
+    margin-bottom: 17px;
+}
 
-        .error {
-            display: block !important;
-            background: #fee2e2;
-            color: #991b1b;
-        }
+.form-group label {
+    display: block;
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 7px;
+}
 
-        .info {
-            display: block !important;
-            background: #dbeafe;
-            color: #1e40af;
-        }
+.form-control {
+    width: 100%;
+    height: 46px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 0 13px;
+    outline: none;
+}
 
-        .uid {
-            margin-top: 20px;
-            padding: 10px;
-            background: #f1f5f9;
-            border-radius: 7px;
-            font-size: 10px;
-            color: #64748b;
-            word-break: break-all;
-        }
-    </style>
+.form-control:focus {
+    border-color: #2563eb;
+}
+
+.primary-btn {
+    width: 100%;
+    height: 46px;
+    border: none;
+    border-radius: 8px;
+    background: #2563eb;
+    color: white;
+    font-weight: bold;
+}
+
+.primary-btn:hover {
+    background: #1d4ed8;
+}
+
+.primary-btn:disabled {
+    opacity: .6;
+}
+
+.message {
+    margin-top: 15px;
+    padding: 11px;
+    border-radius: 8px;
+    display: none;
+    font-size: 13px;
+}
+
+.message.error {
+    display: block;
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.message.success {
+    display: block;
+    background: #dcfce7;
+    color: #166534;
+}
+
+.message.info {
+    display: block;
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+
+/* =========================================================
+   APPLICATION
+========================================================= */
+
+#app {
+    display: none;
+    min-height: 100vh;
+}
+
+.sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 250px;
+    background: #0f172a;
+    color: white;
+    padding: 22px 15px;
+    z-index: 20;
+}
+
+.sidebar-logo {
+    padding: 10px;
+    font-size: 19px;
+    font-weight: bold;
+    margin-bottom: 25px;
+}
+
+.sidebar-logo small {
+    display: block;
+    color: #94a3b8;
+    font-size: 11px;
+    margin-top: 5px;
+}
+
+.nav-btn {
+    width: 100%;
+    padding: 12px 14px;
+    margin-bottom: 6px;
+    border: none;
+    background: transparent;
+    color: #cbd5e1;
+    text-align: left;
+    border-radius: 8px;
+}
+
+.nav-btn:hover,
+.nav-btn.active {
+    background: #1d4ed8;
+    color: white;
+}
+
+.logout-btn {
+    position: absolute;
+    bottom: 20px;
+    left: 15px;
+    right: 15px;
+    width: calc(100% - 30px);
+    padding: 11px;
+    border: none;
+    border-radius: 8px;
+    background: #dc2626;
+    color: white;
+}
+
+.main {
+    margin-left: 250px;
+    min-height: 100vh;
+}
+
+.topbar {
+    height: 70px;
+    background: white;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 28px;
+}
+
+.topbar-title {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.admin-info {
+    font-size: 13px;
+    color: #64748b;
+}
+
+.content {
+    padding: 28px;
+}
+
+
+/* =========================================================
+   PAGES
+========================================================= */
+
+.page {
+    display: none;
+}
+
+.page.active {
+    display: block;
+}
+
+
+/* =========================================================
+   CARDS
+========================================================= */
+
+.stats {
+    display: grid;
+    grid-template-columns:
+        repeat(4, 1fr);
+    gap: 18px;
+    margin-bottom: 25px;
+}
+
+.stat-card {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+}
+
+.stat-title {
+    font-size: 13px;
+    color: #64748b;
+}
+
+.stat-value {
+    font-size: 30px;
+    font-weight: bold;
+    margin-top: 8px;
+}
+
+.card {
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e2e8f0;
+    padding: 22px;
+    margin-bottom: 20px;
+}
+
+.card-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 18px;
+}
+
+
+/* =========================================================
+   CLASS FORM
+========================================================= */
+
+.form-grid {
+    display: grid;
+    grid-template-columns:
+        repeat(2, 1fr);
+    gap: 16px;
+}
+
+.full {
+    grid-column: 1 / -1;
+}
+
+.form-actions {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+}
+
+.btn {
+    border: none;
+    border-radius: 7px;
+    padding: 10px 16px;
+    font-weight: 600;
+}
+
+.btn-primary {
+    background: #2563eb;
+    color: white;
+}
+
+.btn-success {
+    background: #16a34a;
+    color: white;
+}
+
+.btn-danger {
+    background: #dc2626;
+    color: white;
+}
+
+.btn-secondary {
+    background: #e2e8f0;
+    color: #334155;
+}
+
+
+/* =========================================================
+   TABLE
+========================================================= */
+
+.table-wrapper {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th,
+td {
+    padding: 12px;
+    border-bottom: 1px solid #e2e8f0;
+    text-align: left;
+    font-size: 13px;
+}
+
+th {
+    background: #f8fafc;
+    color: #475569;
+}
+
+.status {
+    padding: 4px 8px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: bold;
+}
+
+.status-present {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.status-absent {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.status-short {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+
+/* =========================================================
+   MODAL
+========================================================= */
+
+.modal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15,23,42,.65);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.modal.show {
+    display: flex;
+}
+
+.modal-box {
+    width: 650px;
+    max-width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    background: white;
+    border-radius: 14px;
+    padding: 25px;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.close-btn {
+    border: none;
+    background: transparent;
+    font-size: 25px;
+}
+
+
+/* =========================================================
+   STUDENT REGISTRATION
+========================================================= */
+
+.student-counter {
+    padding: 12px;
+    background: #eff6ff;
+    color: #1e40af;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.camera-box {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.camera-panel {
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    padding: 12px;
+}
+
+.camera-panel video {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    background: #0f172a;
+    border-radius: 7px;
+}
+
+.photo-preview {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    background: #e2e8f0;
+    border-radius: 7px;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media(max-width: 900px) {
+
+    .sidebar {
+        width: 210px;
+    }
+
+    .main {
+        margin-left: 210px;
+    }
+
+    .stats {
+        grid-template-columns:
+            repeat(2, 1fr);
+    }
+}
+
+@media(max-width: 650px) {
+
+    .sidebar {
+        position: relative;
+        width: 100%;
+        height: auto;
+    }
+
+    .logout-btn {
+        position: relative;
+        left: auto;
+        bottom: auto;
+        width: 100%;
+        margin-top: 15px;
+    }
+
+    .main {
+        margin-left: 0;
+    }
+
+    .form-grid,
+    .camera-box,
+    .stats {
+        grid-template-columns: 1fr;
+    }
+}
+
+</style>
 </head>
+
 
 <body>
 
-<div class="box">
 
-    <div class="logo">
-        SA
+<!-- =========================================================
+     LOGIN PAGE
+========================================================= -->
+
+<section id="loginPage">
+
+    <div class="login-card">
+
+        <div class="login-logo">
+            SA
+        </div>
+
+        <h1>
+            Smart Lab Attendance
+        </h1>
+
+        <div class="login-subtitle">
+            Administrator Login
+        </div>
+
+
+        <form id="loginForm">
+
+            <div class="form-group">
+
+                <label>
+                    Admin Email
+                </label>
+
+                <input
+                    class="form-control"
+                    id="loginEmail"
+                    type="email"
+                    value="admin@admin.com"
+                    required
+                >
+
+            </div>
+
+
+            <div class="form-group">
+
+                <label>
+                    Password
+                </label>
+
+                <input
+                    class="form-control"
+                    id="loginPassword"
+                    type="password"
+                    required
+                >
+
+            </div>
+
+
+            <button
+                class="primary-btn"
+                id="loginButton"
+                type="submit"
+            >
+                LOGIN
+            </button>
+
+        </form>
+
+
+        <div
+            id="loginMessage"
+            class="message"
+        ></div>
+
     </div>
 
-    <h1>Smart Lab Attendance</h1>
+</section>
 
-    <div class="subtitle">
-        Administrator Login
-    </div>
 
-    <form id="loginForm">
 
-        <label for="email">
-            Admin Email
-        </label>
+<!-- =========================================================
+     APPLICATION
+========================================================= -->
 
-        <input
-            id="email"
-            type="email"
-            value="admin@admin.com"
-            placeholder="Admin email"
-            required
-        >
+<section id="app">
 
-        <label for="password">
-            Password
-        </label>
 
-        <input
-            id="password"
-            type="password"
-            placeholder="Enter password"
-            required
-        >
+    <!-- SIDEBAR -->
+
+    <aside class="sidebar">
+
+        <div class="sidebar-logo">
+
+            SMART ATTENDANCE
+
+            <small>
+                Image Processing System
+            </small>
+
+        </div>
+
 
         <button
-            id="loginButton"
-            type="submit"
+            class="nav-btn active"
+            data-page="dashboardPage"
         >
-            LOGIN
+            Dashboard
         </button>
 
-    </form>
 
-    <div id="message"></div>
+        <button
+            class="nav-btn"
+            data-page="classesPage"
+        >
+            Classrooms
+        </button>
 
-    <div class="uid">
-        Authorized Admin UID:<br>
-        gyXPDTeJARgh1DdLUTO8h2k5Th92
-    </div>
 
-</div>
+        <button
+            class="nav-btn"
+            data-page="studentsPage"
+        >
+            Students
+        </button>
 
+
+        <button
+            class="nav-btn"
+            data-page="attendancePage"
+        >
+            Attendance
+        </button>
+
+
+        <button
+            class="nav-btn"
+            data-page="reportsPage"
+        >
+            Reports
+        </button>
+
+
+        <button
+            class="logout-btn"
+            id="logoutButton"
+        >
+            LOGOUT
+        </button>
+
+    </aside>
+
+
+
+    <!-- MAIN -->
+
+    <main class="main">
+
+
+        <header class="topbar">
+
+            <div
+                class="topbar-title"
+                id="pageTitle"
+            >
+                Dashboard
+            </div>
+
+            <div class="admin-info">
+                Administrator
+            </div>
+
+        </header>
+
+
+
+        <div class="content">
+
+
+            <!-- =================================================
+                 DASHBOARD
+            ================================================= -->
+
+            <section
+                id="dashboardPage"
+                class="page active"
+            >
+
+                <div class="stats">
+
+                    <div class="stat-card">
+
+                        <div class="stat-title">
+                            Total Classes
+                        </div>
+
+                        <div
+                            class="stat-value"
+                            id="totalClasses"
+                        >
+                            0
+                        </div>
+
+                    </div>
+
+
+                    <div class="stat-card">
+
+                        <div class="stat-title">
+                            Total Students
+                        </div>
+
+                        <div
+                            class="stat-value"
+                            id="totalStudents"
+                        >
+                            0
+                        </div>
+
+                    </div>
+
+
+                    <div class="stat-card">
+
+                        <div class="stat-title">
+                            Present Today
+                        </div>
+
+                        <div
+                            class="stat-value"
+                            id="presentToday"
+                        >
+                            0
+                        </div>
+
+                    </div>
+
+
+                    <div class="stat-card">
+
+                        <div class="stat-title">
+                            Active Classes
+                        </div>
+
+                        <div
+                            class="stat-value"
+                            id="activeClasses"
+                        >
+                            0
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="card">
+
+                    <div class="card-title">
+                        System Overview
+                    </div>
+
+                    <p>
+                        Create classrooms, register students,
+                        monitor entry and exit attendance,
+                        calculate laboratory duration and
+                        generate reports.
+                    </p>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 CLASSES
+            ================================================= -->
+
+            <section
+                id="classesPage"
+                class="page"
+            >
+
+                <div class="card">
+
+                    <div class="card-title">
+                        Create Classroom
+                    </div>
+
+
+                    <form id="classForm">
+
+                        <div class="form-grid">
+
+
+                            <div class="form-group">
+
+                                <label>
+                                    Academic Year
+                                </label>
+
+                                <input
+                                    class="form-control"
+                                    id="academicYear"
+                                    placeholder="2026-27"
+                                    required
+                                >
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label>
+                                    Department
+                                </label>
+
+                                <input
+                                    class="form-control"
+                                    id="department"
+                                    placeholder="Electrical Engineering"
+                                    required
+                                >
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label>
+                                    Admission Year
+                                </label>
+
+                                <input
+                                    class="form-control"
+                                    id="admissionYear"
+                                    type="number"
+                                    placeholder="2023"
+                                    required
+                                >
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label>
+                                    Group
+                                </label>
+
+                                <input
+                                    class="form-control"
+                                    id="group"
+                                    placeholder="A"
+                                    required
+                                >
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label>
+                                    Semester
+                                </label>
+
+                                <select
+                                    class="form-control"
+                                    id="semester"
+                                    required
+                                >
+
+                                    <option value="">
+                                        Select Semester
+                                    </option>
+
+                                    <option>1</option>
+                                    <option>2</option>
+                                    <option>3</option>
+                                    <option>4</option>
+                                    <option>5</option>
+                                    <option>6</option>
+                                    <option>7</option>
+                                    <option>8</option>
+
+                                </select>
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label>
+                                    Lab Name
+                                </label>
+
+                                <input
+                                    class="form-control"
+                                    id="labName"
+                                    placeholder="Electrical Machines Lab"
+                                    required
+                                >
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label>
+                                    Class Start Time
+                                </label>
+
+                                <input
+                                    class="form-control"
+                                    id="classStart"
+                                    type="time"
+                                    required
+                                >
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label>
+                                    Class End Time
+                                </label>
+
+                                <input
+                                    class="form-control"
+                                    id="classEnd"
+                                    type="time"
+                                    required
+                                >
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label>
+                                    Minimum Required Time (minutes)
+                                </label>
+
+                                <input
+                                    class="form-control"
+                                    id="minimumMinutes"
+                                    type="number"
+                                    min="1"
+                                    placeholder="60"
+                                    required
+                                >
+
+                            </div>
+
+
+                            <div class="form-group">
+
+                                <label>
+                                    Automatic Shutdown After End (minutes)
+                                </label>
+
+                                <input
+                                    class="form-control"
+                                    id="shutdownMinutes"
+                                    type="number"
+                                    min="0"
+                                    value="15"
+                                    required
+                                >
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="form-actions">
+
+                            <button
+                                class="btn btn-primary"
+                                type="submit"
+                            >
+                                CREATE CLASS
+                            </button>
+
+                        </div>
+
+                    </form>
+
+                </div>
+
+
+                <div class="card">
+
+                    <div class="card-title">
+                        Created Classrooms
+                    </div>
+
+                    <div class="table-wrapper">
+
+                        <table>
+
+                            <thead>
+
+                                <tr>
+                                    <th>Lab</th>
+                                    <th>Department</th>
+                                    <th>Group</th>
+                                    <th>Semester</th>
+                                    <th>Time</th>
+                                    <th>Min Time</th>
+                                    <th>Actions</th>
+                                </tr>
+
+                            </thead>
+
+                            <tbody id="classesTable">
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 STUDENTS
+            ================================================= -->
+
+            <section
+                id="studentsPage"
+                class="page"
+            >
+
+                <div class="card">
+
+                    <div class="card-title">
+                        Student Registration
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Select Classroom
+                        </label>
+
+                        <select
+                            class="form-control"
+                            id="studentClassSelect"
+                        >
+
+                            <option value="">
+                                Select Class
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label>
+                            Number of Students
+                        </label>
+
+                        <input
+                            class="form-control"
+                            id="studentCount"
+                            type="number"
+                            min="1"
+                            placeholder="Enter number of students"
+                        >
+
+                    </div>
+
+
+                    <button
+                        class="btn btn-primary"
+                        id="startRegistration"
+                    >
+                        START REGISTRATION
+                    </button>
+
+                </div>
+
+
+                <div
+                    class="card"
+                    id="studentRegistrationCard"
+                    style="display:none;"
+                >
+
+                    <div class="card-title">
+                        Register Student
+                    </div>
+
+
+                    <div
+                        class="student-counter"
+                        id="studentCounter"
+                    >
+                        Student 1
+                    </div>
+
+
+                    <div class="form-grid">
+
+                        <div class="form-group">
+
+                            <label>
+                                Enrollment Number
+                            </label>
+
+                            <input
+                                class="form-control"
+                                id="studentEnrollment"
+                            >
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label>
+                                Class Roll Number
+                            </label>
+
+                            <input
+                                class="form-control"
+                                id="studentRoll"
+                            >
+
+                        </div>
+
+
+                        <div
+                            class="form-group full"
+                        >
+
+                            <label>
+                                Student Name
+                            </label>
+
+                            <input
+                                class="form-control"
+                                id="studentName"
+                            >
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="camera-box">
+
+                        <div class="camera-panel">
+
+                            <h4>
+                                Photo 1
+                            </h4>
+
+                            <video
+                                id="cameraVideo"
+                                autoplay
+                                playsinline
+                            ></video>
+
+                            <button
+                                class="btn btn-primary"
+                                id="capturePhoto1"
+                                style="margin-top:10px;"
+                            >
+                                CAPTURE PHOTO 1
+                            </button>
+
+                        </div>
+
+
+                        <div class="camera-panel">
+
+                            <h4>
+                                Photo 2
+                            </h4>
+
+                            <canvas
+                                id="photoCanvas"
+                                style="display:none;"
+                            ></canvas>
+
+                            <img
+                                id="photoPreview"
+                                class="photo-preview"
+                                alt="Photo preview"
+                            >
+
+                            <button
+                                class="btn btn-primary"
+                                id="capturePhoto2"
+                                style="margin-top:10px;"
+                            >
+                                CAPTURE PHOTO 2
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-actions">
+
+                        <button
+                            class="btn btn-success"
+                            id="saveStudent"
+                        >
+                            SAVE & NEXT
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <div class="card">
+
+                    <div class="card-title">
+                        Registered Students
+                    </div>
+
+                    <div class="table-wrapper">
+
+                        <table>
+
+                            <thead>
+
+                                <tr>
+                                    <th>Enrollment</th>
+                                    <th>Roll</th>
+                                    <th>Name</th>
+                                    <th>Class</th>
+                                    <th>Actions</th>
+                                </tr>
+
+                            </thead>
+
+                            <tbody id="studentsTable">
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 ATTENDANCE
+            ================================================= -->
+
+            <section
+                id="attendancePage"
+                class="page"
+            >
+
+                <div class="card">
+
+                    <div class="card-title">
+                        Attendance
+                    </div>
+
+
+                    <div class="form-grid">
+
+                        <div class="form-group">
+
+                            <label>
+                                Select Classroom
+                            </label>
+
+                            <select
+                                class="form-control"
+                                id="attendanceClassSelect"
+                            >
+
+                                <option value="">
+                                    Select Class
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label>
+                                Date
+                            </label>
+
+                            <input
+                                class="form-control"
+                                type="date"
+                                id="attendanceDate"
+                            >
+
+                        </div>
+
+                    </div>
+
+
+                    <div
+                        class="form-actions"
+                    >
+
+                        <button
+                            class="btn btn-primary"
+                            id="loadAttendance"
+                        >
+                            LOAD ATTENDANCE
+                        </button>
+
+                    </div>
+
+                </div>
+
+
+                <div class="card">
+
+                    <div class="table-wrapper">
+
+                        <table>
+
+                            <thead>
+
+                                <tr>
+
+                                    <th>
+                                        Enrollment
+                                    </th>
+
+                                    <th>
+                                        Roll
+                                    </th>
+
+                                    <th>
+                                        Name
+                                    </th>
+
+                                    <th>
+                                        Sessions
+                                    </th>
+
+                                    <th>
+                                        Total Time
+                                    </th>
+
+                                    <th>
+                                        Required
+                                    </th>
+
+                                    <th>
+                                        Status
+                                    </th>
+
+                                    <th>
+                                        Actions
+                                    </th>
+
+                                </tr>
+
+                            </thead>
+
+                            <tbody
+                                id="attendanceTable"
+                            >
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- =================================================
+                 REPORTS
+            ================================================= -->
+
+            <section
+                id="reportsPage"
+                class="page"
+            >
+
+                <div class="card">
+
+                    <div class="card-title">
+                        Generate Attendance Report
+                    </div>
+
+
+                    <div class="form-grid">
+
+                        <div class="form-group">
+
+                            <label>
+                                Classroom
+                            </label>
+
+                            <select
+                                class="form-control"
+                                id="reportClassSelect"
+                            >
+
+                                <option value="">
+                                    Select Class
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label>
+                                Date
+                            </label>
+
+                            <input
+                                class="form-control"
+                                type="date"
+                                id="reportDate"
+                            >
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-actions">
+
+                        <button
+                            class="btn btn-primary"
+                            id="generateReport"
+                        >
+                            GENERATE PDF
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+        </div>
+
+    </main>
+
+</section>
+
+
+
+<!-- =========================================================
+     FIREBASE
+========================================================= -->
 
 <script type="module">
 
-    import {
-        initializeApp
-    } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+import {
+    initializeApp
+} from
+"https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
 
-    import {
-        getAuth,
-        signInWithEmailAndPassword,
-        signOut
-    } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+import {
+    getAuth,
+    signInWithEmailAndPassword,
+    signOut,
+    onAuthStateChanged
+} from
+"https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 
-
-    // ==========================================================
-    // FIREBASE CONFIG
-    // ==========================================================
-
-    const firebaseConfig = {
-
-        apiKey:
-            "AIzaSyCPixQatVPa326_yGej41aD9p5Z5Fyt3Lg",
-
-        authDomain:
-            "kolkata-metro-fine.firebaseapp.com",
-
-        databaseURL:
-            "https://kolkata-metro-fine-default-rtdb.firebaseio.com",
-
-        projectId:
-            "kolkata-metro-fine",
-
-        storageBucket:
-            "kolkata-metro-fine.firebasestorage.app",
-
-        messagingSenderId:
-            "835007350697",
-
-        appId:
-            "1:835007350697:web:8f359ed3fd8c0805ea66b8"
-    };
+import {
+    getDatabase,
+    ref,
+    push,
+    set,
+    get,
+    remove
+} from
+"https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js";
 
 
-    // ==========================================================
-    // ADMIN UID
-    // ==========================================================
+/* =========================================================
+   FIREBASE CONFIG
+========================================================= */
 
-    const ADMIN_UID =
-        "gyXPDTeJARgh1DdLUTO8h2k5Th92";
+const firebaseConfig = {
 
+    apiKey:
+        "AIzaSyCPixQatVPa326_yGej41aD9p5Z5Fyt3Lg",
 
-    // ==========================================================
-    // INITIALIZE
-    // ==========================================================
+    authDomain:
+        "kolkata-metro-fine.firebaseapp.com",
 
-    const app =
-        initializeApp(firebaseConfig);
+    databaseURL:
+        "https://kolkata-metro-fine-default-rtdb.firebaseio.com",
 
-    const auth =
-        getAuth(app);
+    projectId:
+        "kolkata-metro-fine",
 
+    storageBucket:
+        "kolkata-metro-fine.firebasestorage.app",
 
-    // ==========================================================
-    // ELEMENTS
-    // ==========================================================
+    messagingSenderId:
+        "835007350697",
 
-    const form =
-        document.getElementById("loginForm");
-
-    const email =
-        document.getElementById("email");
-
-    const password =
-        document.getElementById("password");
-
-    const button =
-        document.getElementById("loginButton");
-
-    const message =
-        document.getElementById("message");
+    appId:
+        "1:835007350697:web:8f359ed3fd8c0805ea66b8"
+};
 
 
-    // ==========================================================
-    // MESSAGE
-    // ==========================================================
+/* =========================================================
+   AUTHORIZED ADMIN
+========================================================= */
 
-    function showMessage(
-        text,
-        type
+const ADMIN_UID =
+    "gyXPDTeJARgh1DdLUTO8h2k5Th92";
+
+
+/* =========================================================
+   FIREBASE INITIALIZATION
+========================================================= */
+
+const app =
+    initializeApp(firebaseConfig);
+
+const auth =
+    getAuth(app);
+
+const db =
+    getDatabase(app);
+
+
+/* =========================================================
+   GLOBAL STATE
+========================================================= */
+
+let currentUser = null;
+
+let selectedClassId = null;
+
+let registrationTotal = 0;
+
+let registrationCurrent = 1;
+
+let photo1Data = null;
+
+let photo2Data = null;
+
+let cameraStream = null;
+
+
+/* =========================================================
+   LOGIN ELEMENTS
+========================================================= */
+
+const loginPage =
+    document.getElementById("loginPage");
+
+const application =
+    document.getElementById("app");
+
+const loginForm =
+    document.getElementById("loginForm");
+
+const loginMessage =
+    document.getElementById("loginMessage");
+
+
+/* =========================================================
+   LOGIN MESSAGE
+========================================================= */
+
+function loginMsg(
+    text,
+    type = "error"
+) {
+
+    loginMessage.textContent = text;
+
+    loginMessage.className =
+        "message " + type;
+}
+
+
+/* =========================================================
+   LOGIN
+========================================================= */
+
+loginForm.addEventListener(
+    "submit",
+    async event => {
+
+        event.preventDefault();
+
+        const email =
+            document
+            .getElementById("loginEmail")
+            .value
+            .trim();
+
+        const password =
+            document
+            .getElementById("loginPassword")
+            .value;
+
+        const button =
+            document
+            .getElementById("loginButton");
+
+
+        button.disabled = true;
+
+        button.textContent =
+            "AUTHENTICATING...";
+
+
+        try {
+
+            const result =
+                await signInWithEmailAndPassword(
+                    auth,
+                    email,
+                    password
+                );
+
+
+            const user =
+                result.user;
+
+
+            console.log(
+                "Authenticated UID:",
+                user.uid
+            );
+
+
+            if (
+                user.uid !== ADMIN_UID
+            ) {
+
+                await signOut(auth);
+
+                throw new Error(
+                    "This Firebase account is not the authorized administrator."
+                );
+            }
+
+
+            currentUser =
+                user;
+
+
+            loginMsg(
+                "Login successful.",
+                "success"
+            );
+
+
+            setTimeout(
+                () => {
+
+                    loginPage.style.display =
+                        "none";
+
+                    application.style.display =
+                        "block";
+
+                    loadAllData();
+
+                },
+                500
+            );
+
+
+        } catch(error) {
+
+            console.error(error);
+
+            let text =
+                error.message ||
+                "Login failed.";
+
+
+            if (
+                error.code ===
+                "auth/invalid-credential"
+            ) {
+
+                text =
+                    "Incorrect email or password.";
+            }
+
+
+            loginMsg(
+                text,
+                "error"
+            );
+
+
+            button.disabled = false;
+
+            button.textContent =
+                "LOGIN";
+        }
+
+    }
+);
+
+
+/* =========================================================
+   AUTH STATE
+========================================================= */
+
+onAuthStateChanged(
+    auth,
+    user => {
+
+        if (
+            user &&
+            user.uid === ADMIN_UID
+        ) {
+
+            currentUser =
+                user;
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   LOGOUT
+========================================================= */
+
+document
+.getElementById("logoutButton")
+.addEventListener(
+    "click",
+    async () => {
+
+        if (
+            cameraStream
+        ) {
+
+            cameraStream
+                .getTracks()
+                .forEach(
+                    track =>
+                        track.stop()
+                );
+
+            cameraStream = null;
+        }
+
+
+        await signOut(auth);
+
+        currentUser = null;
+
+        application.style.display =
+            "none";
+
+        loginPage.style.display =
+            "flex";
+
+        loginForm.reset();
+
+    }
+);
+
+
+/* =========================================================
+   NAVIGATION
+========================================================= */
+
+const navButtons =
+    document.querySelectorAll(
+        ".nav-btn"
+    );
+
+navButtons.forEach(
+    button => {
+
+        button.addEventListener(
+            "click",
+            () => {
+
+                const pageId =
+                    button.dataset.page;
+
+
+                document
+                .querySelectorAll(".page")
+                .forEach(
+                    page =>
+                        page.classList.remove(
+                            "active"
+                        )
+                );
+
+
+                document
+                .getElementById(pageId)
+                .classList.add(
+                    "active"
+                );
+
+
+                navButtons.forEach(
+                    item =>
+                        item.classList.remove(
+                            "active"
+                        )
+                );
+
+
+                button.classList.add(
+                    "active"
+                );
+
+
+                document
+                .getElementById("pageTitle")
+                .textContent =
+                    button.textContent.trim();
+
+
+                if (
+                    pageId ===
+                    "studentsPage"
+                ) {
+
+                    loadStudents();
+                }
+
+
+                if (
+                    pageId ===
+                    "classesPage"
+                ) {
+
+                    loadClasses();
+                }
+
+            }
+        );
+
+    }
+);
+
+
+/* =========================================================
+   CREATE CLASS
+========================================================= */
+
+document
+.getElementById("classForm")
+.addEventListener(
+    "submit",
+    async event => {
+
+        event.preventDefault();
+
+
+        const classRef =
+            push(
+                ref(
+                    db,
+                    "classes"
+                )
+            );
+
+
+        const classData = {
+
+            academicYear:
+                document
+                .getElementById("academicYear")
+                .value
+                .trim(),
+
+            department:
+                document
+                .getElementById("department")
+                .value
+                .trim(),
+
+            admissionYear:
+                document
+                .getElementById("admissionYear")
+                .value,
+
+            group:
+                document
+                .getElementById("group")
+                .value
+                .trim(),
+
+            semester:
+                document
+                .getElementById("semester")
+                .value,
+
+            labName:
+                document
+                .getElementById("labName")
+                .value
+                .trim(),
+
+            startTime:
+                document
+                .getElementById("classStart")
+                .value,
+
+            endTime:
+                document
+                .getElementById("classEnd")
+                .value,
+
+            minimumMinutes:
+                Number(
+                    document
+                    .getElementById("minimumMinutes")
+                    .value
+                ),
+
+            shutdownMinutes:
+                Number(
+                    document
+                    .getElementById("shutdownMinutes")
+                    .value
+                ),
+
+            createdAt:
+                new Date().toISOString()
+
+        };
+
+
+        try {
+
+            await set(
+                classRef,
+                classData
+            );
+
+
+            alert(
+                "Classroom created successfully."
+            );
+
+
+            document
+            .getElementById("classForm")
+            .reset();
+
+
+            document
+            .getElementById("shutdownMinutes")
+            .value = 15;
+
+
+            loadAllData();
+
+
+        } catch(error) {
+
+            console.error(error);
+
+            alert(
+                "Unable to create classroom: " +
+                error.message
+            );
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   LOAD ALL DATA
+========================================================= */
+
+async function loadAllData() {
+
+    await loadClasses();
+
+    await loadStudents();
+
+    updateDashboard();
+
+}
+
+
+/* =========================================================
+   LOAD CLASSES
+========================================================= */
+
+async function loadClasses() {
+
+    try {
+
+        const snapshot =
+            await get(
+                ref(
+                    db,
+                    "classes"
+                )
+            );
+
+
+        const table =
+            document
+            .getElementById("classesTable");
+
+
+        const studentClass =
+            document
+            .getElementById("studentClassSelect");
+
+        const attendanceClass =
+            document
+            .getElementById("attendanceClassSelect");
+
+        const reportClass =
+            document
+            .getElementById("reportClassSelect");
+
+
+        table.innerHTML = "";
+
+
+        studentClass.innerHTML =
+            '<option value="">Select Class</option>';
+
+        attendanceClass.innerHTML =
+            '<option value="">Select Class</option>';
+
+        reportClass.innerHTML =
+            '<option value="">Select Class</option>';
+
+
+        if (
+            !snapshot.exists()
+        ) {
+
+            return;
+        }
+
+
+        const classes =
+            snapshot.val();
+
+
+        Object.entries(classes)
+        .forEach(
+            ([id, data]) => {
+
+                const row =
+                    document
+                    .createElement("tr");
+
+
+                row.innerHTML = `
+
+                    <td>
+                        ${escapeHtml(data.labName || "")}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(data.department || "")}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(data.group || "")}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(data.semester || "")}
+                    </td>
+
+                    <td>
+                        ${data.startTime || ""}
+                        -
+                        ${data.endTime || ""}
+                    </td>
+
+                    <td>
+                        ${data.minimumMinutes || 0} min
+                    </td>
+
+                    <td>
+
+                        <button
+                            class="btn btn-danger"
+                            onclick="deleteClass('${id}')"
+                        >
+                            DELETE
+                        </button>
+
+                    </td>
+
+                `;
+
+
+                table.appendChild(row);
+
+
+                const option =
+                    new Option(
+                        `${data.labName} | ${data.group} | Sem ${data.semester}`,
+                        id
+                    );
+
+
+                studentClass.appendChild(
+                    option.cloneNode(true)
+                );
+
+                attendanceClass.appendChild(
+                    option.cloneNode(true)
+                );
+
+                reportClass.appendChild(
+                    option.cloneNode(true)
+                );
+
+            }
+        );
+
+
+        updateDashboard();
+
+
+    } catch(error) {
+
+        console.error(
+            "Load classes:",
+            error
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   DELETE CLASS
+========================================================= */
+
+window.deleteClass =
+async function(id) {
+
+    if (
+        !confirm(
+            "Delete this classroom and its data?"
+        )
     ) {
 
-        message.textContent = text;
-
-        message.className = type;
+        return;
     }
 
 
-    // ==========================================================
-    // LOGIN
-    // ==========================================================
+    try {
 
-    form.addEventListener(
-        "submit",
-        async function(event) {
-
-            event.preventDefault();
-
-            button.disabled = true;
-
-            button.textContent =
-                "AUTHENTICATING...";
-
-            message.className = "";
-
-            try {
-
-                // ------------------------------------------------
-                // FIREBASE LOGIN
-                // ------------------------------------------------
-
-                const credential =
-                    await signInWithEmailAndPassword(
-                        auth,
-                        email.value.trim(),
-                        password.value
-                    );
+        await remove(
+            ref(
+                db,
+                "classes/" + id
+            )
+        );
 
 
-                const user =
-                    credential.user;
+        await loadAllData();
 
 
-                console.log(
-                    "Firebase UID:",
-                    user.uid
+    } catch(error) {
+
+        alert(
+            "Delete failed: " +
+            error.message
+        );
+
+    }
+
+};
+
+
+/* =========================================================
+   STUDENT REGISTRATION START
+========================================================= */
+
+document
+.getElementById("startRegistration")
+.addEventListener(
+    "click",
+    async () => {
+
+        selectedClassId =
+            document
+            .getElementById("studentClassSelect")
+            .value;
+
+
+        registrationTotal =
+            Number(
+                document
+                .getElementById("studentCount")
+                .value
+            );
+
+
+        if (
+            !selectedClassId
+        ) {
+
+            alert(
+                "Select a classroom."
+            );
+
+            return;
+        }
+
+
+        if (
+            !registrationTotal ||
+            registrationTotal < 1
+        ) {
+
+            alert(
+                "Enter the number of students."
+            );
+
+            return;
+        }
+
+
+        registrationCurrent =
+            1;
+
+
+        document
+        .getElementById(
+            "studentRegistrationCard"
+        )
+        .style.display =
+            "block";
+
+
+        updateRegistrationCounter();
+
+
+        await startCamera();
+
+    }
+);
+
+
+/* =========================================================
+   CAMERA
+========================================================= */
+
+async function startCamera() {
+
+    try {
+
+        cameraStream =
+            await navigator
+            .mediaDevices
+            .getUserMedia({
+                video: {
+                    facingMode: "user"
+                },
+                audio: false
+            });
+
+
+        document
+        .getElementById("cameraVideo")
+        .srcObject =
+            cameraStream;
+
+
+    } catch(error) {
+
+        alert(
+            "Camera access failed: " +
+            error.message
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   PHOTO 1
+========================================================= */
+
+document
+.getElementById("capturePhoto1")
+.addEventListener(
+    "click",
+    () => {
+
+        const video =
+            document
+            .getElementById("cameraVideo");
+
+        const canvas =
+            document
+            .getElementById("photoCanvas");
+
+
+        canvas.width =
+            video.videoWidth;
+
+        canvas.height =
+            video.videoHeight;
+
+
+        canvas
+        .getContext("2d")
+        .drawImage(
+            video,
+            0,
+            0,
+            canvas.width,
+            canvas.height
+        );
+
+
+        photo1Data =
+            canvas.toDataURL(
+                "image/jpeg",
+                0.85
+            );
+
+
+        alert(
+            "Photo 1 captured."
+        );
+
+    }
+);
+
+
+/* =========================================================
+   PHOTO 2
+========================================================= */
+
+document
+.getElementById("capturePhoto2")
+.addEventListener(
+    "click",
+    () => {
+
+        const video =
+            document
+            .getElementById("cameraVideo");
+
+        const canvas =
+            document
+            .getElementById("photoCanvas");
+
+
+        canvas.width =
+            video.videoWidth;
+
+        canvas.height =
+            video.videoHeight;
+
+
+        canvas
+        .getContext("2d")
+        .drawImage(
+            video,
+            0,
+            0,
+            canvas.width,
+            canvas.height
+        );
+
+
+        photo2Data =
+            canvas.toDataURL(
+                "image/jpeg",
+                0.85
+            );
+
+
+        document
+        .getElementById("photoPreview")
+        .src =
+            photo2Data;
+
+
+        alert(
+            "Photo 2 captured."
+        );
+
+    }
+);
+
+
+/* =========================================================
+   SAVE STUDENT
+========================================================= */
+
+document
+.getElementById("saveStudent")
+.addEventListener(
+    "click",
+    async () => {
+
+        const enrollment =
+            document
+            .getElementById("studentEnrollment")
+            .value
+            .trim();
+
+        const roll =
+            document
+            .getElementById("studentRoll")
+            .value
+            .trim();
+
+        const name =
+            document
+            .getElementById("studentName")
+            .value
+            .trim();
+
+
+        if (
+            !enrollment ||
+            !roll ||
+            !name
+        ) {
+
+            alert(
+                "Enter enrollment number, roll number and name."
+            );
+
+            return;
+        }
+
+
+        if (
+            !photo1Data ||
+            !photo2Data
+        ) {
+
+            alert(
+                "Capture both photos."
+            );
+
+            return;
+        }
+
+
+        try {
+
+            const studentRef =
+                push(
+                    ref(
+                        db,
+                        "classes/" +
+                        selectedClassId +
+                        "/students"
+                    )
                 );
 
 
-                // ------------------------------------------------
-                // UID VERIFICATION
-                // ------------------------------------------------
+            await set(
+                studentRef,
+                {
+
+                    enrollmentNo:
+                        enrollment,
+
+                    rollNo:
+                        roll,
+
+                    name:
+                        name,
+
+                    photo1:
+                        photo1Data,
+
+                    photo2:
+                        photo2Data,
+
+                    createdAt:
+                        new Date().toISOString()
+
+                }
+            );
+
+
+            alert(
+                "Student saved successfully."
+            );
+
+
+            registrationCurrent++;
+
+
+            clearStudentForm();
+
+
+            if (
+                registrationCurrent >
+                registrationTotal
+            ) {
+
+                alert(
+                    "All students registered."
+                );
+
+
+                document
+                .getElementById(
+                    "studentRegistrationCard"
+                )
+                .style.display =
+                    "none";
+
 
                 if (
-                    user.uid !== ADMIN_UID
+                    cameraStream
                 ) {
 
-                    await signOut(auth);
-
-                    throw new Error(
-                        "This Firebase account is not the authorized administrator."
+                    cameraStream
+                    .getTracks()
+                    .forEach(
+                        track =>
+                            track.stop()
                     );
+
+                    cameraStream = null;
                 }
 
 
-                // ------------------------------------------------
-                // LOGIN SUCCESS
-                // ------------------------------------------------
+            } else {
 
-                showMessage(
-                    "Administrator verified. Opening dashboard...",
-                    "success"
-                );
+                updateRegistrationCounter();
 
-
-                setTimeout(
-                    function() {
-
-                        window.location.href =
-                            "classes.html";
-
-                    },
-                    700
-                );
-
-
-            } catch(error) {
-
-                console.error(
-                    "Login error:",
-                    error
-                );
-
-
-                let text =
-                    "Login failed.";
-
-
-                if (
-                    error.code ===
-                    "auth/invalid-credential"
-                ) {
-
-                    text =
-                        "Incorrect email or password.";
-                }
-
-                else if (
-                    error.code ===
-                    "auth/invalid-email"
-                ) {
-
-                    text =
-                        "Invalid email address.";
-                }
-
-                else if (
-                    error.code ===
-                    "auth/too-many-requests"
-                ) {
-
-                    text =
-                        "Too many attempts. Try again later.";
-                }
-
-                else if (
-                    error.code ===
-                    "auth/network-request-failed"
-                ) {
-
-                    text =
-                        "Network error. Check your internet connection.";
-                }
-
-                else if (
-                    error.message
-                ) {
-
-                    text =
-                        error.message;
-                }
-
-
-                showMessage(
-                    text,
-                    "error"
-                );
-
-
-                button.disabled = false;
-
-                button.textContent =
-                    "LOGIN";
             }
 
+
+            loadStudents();
+
+
+        } catch(error) {
+
+            console.error(error);
+
+            alert(
+                "Unable to save student: " +
+                error.message
+            );
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   CLEAR STUDENT FORM
+========================================================= */
+
+function clearStudentForm() {
+
+    document
+    .getElementById("studentEnrollment")
+    .value = "";
+
+    document
+    .getElementById("studentRoll")
+    .value = "";
+
+    document
+    .getElementById("studentName")
+    .value = "";
+
+    document
+    .getElementById("photoPreview")
+    .removeAttribute("src");
+
+    photo1Data = null;
+
+    photo2Data = null;
+
+}
+
+
+/* =========================================================
+   REGISTRATION COUNTER
+========================================================= */
+
+function updateRegistrationCounter() {
+
+    document
+    .getElementById("studentCounter")
+    .textContent =
+        "Student " +
+        registrationCurrent +
+        " of " +
+        registrationTotal;
+
+}
+
+
+/* =========================================================
+   LOAD STUDENTS
+========================================================= */
+
+async function loadStudents() {
+
+    const table =
+        document
+        .getElementById("studentsTable");
+
+
+    table.innerHTML = "";
+
+
+    try {
+
+        const snapshot =
+            await get(
+                ref(
+                    db,
+                    "classes"
+                )
+            );
+
+
+        if (
+            !snapshot.exists()
+        ) {
+
+            return;
+        }
+
+
+        const classes =
+            snapshot.val();
+
+
+        Object.entries(classes)
+        .forEach(
+            ([classId, classData]) => {
+
+                if (
+                    !classData.students
+                ) {
+
+                    return;
+                }
+
+
+                Object.entries(
+                    classData.students
+                )
+                .forEach(
+                    ([studentId, student]) => {
+
+                        const row =
+                            document
+                            .createElement("tr");
+
+
+                        row.innerHTML = `
+
+                            <td>
+                                ${escapeHtml(student.enrollmentNo || "")}
+                            </td>
+
+                            <td>
+                                ${escapeHtml(student.rollNo || "")}
+                            </td>
+
+                            <td>
+                                ${escapeHtml(student.name || "")}
+                            </td>
+
+                            <td>
+                                ${escapeHtml(classData.labName || "")}
+                            </td>
+
+                            <td>
+
+                                <button
+                                    class="btn btn-danger"
+                                    onclick="deleteStudent('${classId}','${studentId}')"
+                                >
+                                    DELETE
+                                </button>
+
+                            </td>
+
+                        `;
+
+
+                        table.appendChild(row);
+
+                    }
+                );
+
+            }
+        );
+
+
+    } catch(error) {
+
+        console.error(
+            "Load students:",
+            error
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   DELETE STUDENT
+========================================================= */
+
+window.deleteStudent =
+async function(
+    classId,
+    studentId
+) {
+
+    if (
+        !confirm(
+            "Delete this student?"
+        )
+    ) {
+
+        return;
+    }
+
+
+    try {
+
+        await remove(
+            ref(
+                db,
+                "classes/" +
+                classId +
+                "/students/" +
+                studentId
+            )
+        );
+
+
+        loadStudents();
+
+
+    } catch(error) {
+
+        alert(
+            "Delete failed: " +
+            error.message
+        );
+
+    }
+
+};
+
+
+/* =========================================================
+   LOAD ATTENDANCE
+========================================================= */
+
+document
+.getElementById("loadAttendance")
+.addEventListener(
+    "click",
+    async () => {
+
+        const classId =
+            document
+            .getElementById(
+                "attendanceClassSelect"
+            )
+            .value;
+
+        const date =
+            document
+            .getElementById(
+                "attendanceDate"
+            )
+            .value;
+
+
+        if (
+            !classId ||
+            !date
+        ) {
+
+            alert(
+                "Select class and date."
+            );
+
+            return;
+        }
+
+
+        await displayAttendance(
+            classId,
+            date
+        );
+
+    }
+);
+
+
+/* =========================================================
+   DISPLAY ATTENDANCE
+========================================================= */
+
+async function displayAttendance(
+    classId,
+    date
+) {
+
+    const table =
+        document
+        .getElementById(
+            "attendanceTable"
+        );
+
+
+    table.innerHTML = "";
+
+
+    try {
+
+        const classSnapshot =
+            await get(
+                ref(
+                    db,
+                    "classes/" +
+                    classId
+                )
+            );
+
+
+        if (
+            !classSnapshot.exists()
+        ) {
+
+            return;
+        }
+
+
+        const classData =
+            classSnapshot.val();
+
+
+        const attendanceSnapshot =
+            await get(
+                ref(
+                    db,
+                    "attendance/" +
+                    classId +
+                    "/" +
+                    date
+                )
+            );
+
+
+        const attendance =
+            attendanceSnapshot.exists()
+                ? attendanceSnapshot.val()
+                : {};
+
+
+        const students =
+            classData.students || {};
+
+
+        Object.entries(students)
+        .forEach(
+            ([studentId, student]) => {
+
+                const record =
+                    attendance[studentId] ||
+                    {};
+
+
+                const sessions =
+                    record.sessions ||
+                    {};
+
+
+                let totalSeconds = 0;
+
+                let sessionText = [];
+
+
+                Object.values(sessions)
+                .forEach(
+                    session => {
+
+                        if (
+                            session.in &&
+                            session.out
+                        ) {
+
+                            const inTime =
+                                new Date(
+                                    session.in
+                                );
+
+                            const outTime =
+                                new Date(
+                                    session.out
+                                );
+
+
+                            const seconds =
+                                Math.max(
+                                    0,
+                                    (
+                                        outTime -
+                                        inTime
+                                    ) / 1000
+                                );
+
+
+                            totalSeconds +=
+                                seconds;
+
+
+                            sessionText.push(
+                                formatTime(
+                                    inTime
+                                ) +
+                                " - " +
+                                formatTime(
+                                    outTime
+                                )
+                            );
+
+                        }
+
+                    }
+                );
+
+
+                const totalMinutes =
+                    Math.floor(
+                        totalSeconds / 60
+                    );
+
+
+                const required =
+                    Number(
+                        classData.minimumMinutes ||
+                        0
+                    );
+
+
+                let status =
+                    "Absent";
+
+
+                let statusClass =
+                    "status-absent";
+
+
+                if (
+                    totalMinutes >= required
+                ) {
+
+                    status =
+                        "Requirement Met";
+
+                    statusClass =
+                        "status-present";
+
+                }
+
+                else if (
+                    totalMinutes > 0
+                ) {
+
+                    status =
+                        "Below Minimum";
+
+                    statusClass =
+                        "status-short";
+
+                }
+
+
+                const row =
+                    document
+                    .createElement("tr");
+
+
+                row.innerHTML = `
+
+                    <td>
+                        ${escapeHtml(student.enrollmentNo || "")}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(student.rollNo || "")}
+                    </td>
+
+                    <td>
+                        ${escapeHtml(student.name || "")}
+                    </td>
+
+                    <td>
+                        ${
+                            sessionText.length
+                            ?
+                            sessionText.join("<br>")
+                            :
+                            "-"
+                        }
+                    </td>
+
+                    <td>
+                        ${totalMinutes} min
+                    </td>
+
+                    <td>
+                        ${required} min
+                    </td>
+
+                    <td>
+
+                        <span class="status ${statusClass}">
+                            ${status}
+                        </span>
+
+                    </td>
+
+                    <td>
+                        <button
+                            class="btn btn-secondary"
+                            onclick="editAttendance('${classId}','${date}','${studentId}')"
+                        >
+                            EDIT
+                        </button>
+                    </td>
+
+                `;
+
+
+                table.appendChild(row);
+
+            }
+        );
+
+
+    } catch(error) {
+
+        console.error(
+            "Attendance error:",
+            error
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   EDIT ATTENDANCE
+========================================================= */
+
+window.editAttendance =
+function(
+    classId,
+    date,
+    studentId
+) {
+
+    alert(
+        "Attendance correction interface will edit the student's IN/OUT sessions. The database structure is ready for multiple sessions."
+    );
+
+};
+
+
+/* =========================================================
+   DASHBOARD
+========================================================= */
+
+async function updateDashboard() {
+
+    try {
+
+        const snapshot =
+            await get(
+                ref(
+                    db,
+                    "classes"
+                )
+            );
+
+
+        if (
+            !snapshot.exists()
+        ) {
+
+            document
+            .getElementById("totalClasses")
+            .textContent = "0";
+
+            document
+            .getElementById("totalStudents")
+            .textContent = "0";
+
+            return;
+        }
+
+
+        const classes =
+            snapshot.val();
+
+
+        let classCount =
+            0;
+
+        let studentCount =
+            0;
+
+
+        Object.values(classes)
+        .forEach(
+            classData => {
+
+                classCount++;
+
+
+                if (
+                    classData.students
+                ) {
+
+                    studentCount +=
+                        Object.keys(
+                            classData.students
+                        ).length;
+
+                }
+
+            }
+        );
+
+
+        document
+        .getElementById(
+            "totalClasses"
+        )
+        .textContent =
+            classCount;
+
+
+        document
+        .getElementById(
+            "totalStudents"
+        )
+        .textContent =
+            studentCount;
+
+
+    } catch(error) {
+
+        console.error(
+            "Dashboard:",
+            error
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   PDF REPORT
+========================================================= */
+
+document
+.getElementById("generateReport")
+.addEventListener(
+    "click",
+    async () => {
+
+        const classId =
+            document
+            .getElementById(
+                "reportClassSelect"
+            )
+            .value;
+
+        const date =
+            document
+            .getElementById(
+                "reportDate"
+            )
+            .value;
+
+
+        if (
+            !classId ||
+            !date
+        ) {
+
+            alert(
+                "Select classroom and date."
+            );
+
+            return;
+        }
+
+
+        alert(
+            "Report generation is connected to the attendance data. PDF generation can now be added using jsPDF."
+        );
+
+    }
+);
+
+
+/* =========================================================
+   UTILITIES
+========================================================= */
+
+function escapeHtml(value) {
+
+    return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
+
+function formatTime(date) {
+
+    return date.toLocaleTimeString(
+        "en-IN",
+        {
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit"
         }
     );
+
+}
+
+
+/* =========================================================
+   DEFAULT DATES
+========================================================= */
+
+const today =
+    new Date()
+    .toISOString()
+    .split("T")[0];
+
+
+document
+.getElementById(
+    "attendanceDate"
+)
+.value =
+    today;
+
+
+document
+.getElementById(
+    "reportDate"
+)
+.value =
+    today;
+
+
+/* =========================================================
+   INITIAL STATE
+========================================================= */
+
+console.log(
+    "Smart Lab Attendance System loaded."
+);
+
+console.log(
+    "Authorized Admin UID:",
+    ADMIN_UID
+);
 
 </script>
 
