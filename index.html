@@ -5,116 +5,88 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Smart Lab Attendance | Admin Login</title>
+    <title>Smart Lab Attendance - Admin</title>
 
     <style>
         * {
             box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: Arial, Helvetica, sans-serif;
         }
 
         body {
+            margin: 0;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(135deg, #0f172a, #1e3a8a);
-            color: #1e293b;
+            font-family: Arial, sans-serif;
+            background: #0f172a;
         }
 
-        .container {
-            width: 100%;
-            max-width: 430px;
-            padding: 20px;
-        }
-
-        .card {
-            background: #ffffff;
-            border-radius: 20px;
+        .login-box {
+            width: 390px;
+            max-width: calc(100% - 30px);
+            background: white;
             padding: 35px;
-            box-shadow: 0 25px 70px rgba(0,0,0,0.35);
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,.35);
         }
 
         .logo {
-            width: 72px;
-            height: 72px;
-            margin: 0 auto 18px;
-            border-radius: 18px;
+            width: 65px;
+            height: 65px;
+            margin: auto;
+            border-radius: 16px;
             background: #2563eb;
             color: white;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 28px;
+            font-size: 25px;
             font-weight: bold;
         }
 
         h1 {
             text-align: center;
-            font-size: 25px;
+            margin: 18px 0 5px;
             color: #0f172a;
+            font-size: 24px;
         }
 
         .subtitle {
             text-align: center;
             color: #64748b;
-            margin-top: 7px;
-            margin-bottom: 30px;
             font-size: 14px;
-        }
-
-        .form-group {
-            margin-bottom: 18px;
+            margin-bottom: 28px;
         }
 
         label {
             display: block;
             margin-bottom: 7px;
             font-size: 14px;
-            font-weight: 700;
+            font-weight: bold;
+            color: #334155;
         }
 
         input {
             width: 100%;
-            height: 48px;
+            height: 46px;
+            padding: 0 13px;
             border: 1px solid #cbd5e1;
-            border-radius: 9px;
-            padding: 0 14px;
+            border-radius: 8px;
             font-size: 15px;
             outline: none;
+            margin-bottom: 18px;
         }
 
         input:focus {
             border-color: #2563eb;
-            box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
         }
 
-        .password-box {
-            position: relative;
-        }
-
-        .password-box input {
-            padding-right: 48px;
-        }
-
-        .toggle-password {
-            position: absolute;
-            right: 10px;
-            top: 50%;
-            transform: translateY(-50%);
-            border: none;
-            background: transparent;
-            cursor: pointer;
-            font-size: 18px;
-        }
-
-        .login-btn {
+        button {
             width: 100%;
-            height: 48px;
+            height: 47px;
             border: none;
-            border-radius: 9px;
+            border-radius: 8px;
             background: #2563eb;
             color: white;
             font-size: 16px;
@@ -122,154 +94,99 @@
             cursor: pointer;
         }
 
-        .login-btn:hover {
+        button:hover {
             background: #1d4ed8;
         }
 
-        .login-btn:disabled {
-            opacity: 0.65;
+        button:disabled {
+            opacity: .6;
             cursor: not-allowed;
         }
 
-        .message {
+        #message {
             display: none;
-            margin-top: 15px;
+            margin-top: 18px;
             padding: 12px;
             border-radius: 8px;
             font-size: 13px;
             line-height: 1.5;
+            word-break: break-word;
         }
 
-        .message.error {
-            display: block;
+        .error {
+            display: block !important;
             background: #fee2e2;
             color: #991b1b;
         }
 
-        .message.success {
-            display: block;
+        .success {
+            display: block !important;
             background: #dcfce7;
             color: #166534;
         }
 
-        .message.info {
-            display: block;
+        .info {
+            display: block !important;
             background: #dbeafe;
             color: #1e40af;
         }
 
-        .security {
-            margin-top: 20px;
-            text-align: center;
+        .uid-box {
+            margin-top: 15px;
+            padding: 10px;
+            background: #f1f5f9;
+            border-radius: 7px;
             font-size: 11px;
-            line-height: 1.5;
-            color: #64748b;
-        }
-
-        .footer {
-            text-align: center;
-            margin-top: 18px;
-            color: #cbd5e1;
-            font-size: 11px;
-        }
-
-        .spinner {
-            display: none;
-            width: 18px;
-            height: 18px;
-            margin: auto;
-            border: 2px solid rgba(255,255,255,0.4);
-            border-top-color: white;
-            border-radius: 50%;
-            animation: spin 0.7s linear infinite;
-        }
-
-        @keyframes spin {
-            to {
-                transform: rotate(360deg);
-            }
+            word-break: break-all;
+            color: #475569;
         }
     </style>
 </head>
 
 <body>
 
-<div class="container">
+<div class="login-box">
 
-    <div class="card">
+    <div class="logo">SA</div>
 
-        <div class="logo">
-            SA
-        </div>
+    <h1>Smart Lab Attendance</h1>
 
-        <h1>Smart Lab Attendance</h1>
-
-        <div class="subtitle">
-            Administrator Login
-        </div>
-
-        <form id="loginForm">
-
-            <div class="form-group">
-                <label for="email">Admin Email</label>
-
-                <input
-                    type="email"
-                    id="email"
-                    placeholder="Enter admin email"
-                    autocomplete="username"
-                    required
-                >
-            </div>
-
-            <div class="form-group">
-
-                <label for="password">Password</label>
-
-                <div class="password-box">
-
-                    <input
-                        type="password"
-                        id="password"
-                        placeholder="Enter password"
-                        autocomplete="current-password"
-                        required
-                    >
-
-                    <button
-                        type="button"
-                        class="toggle-password"
-                        id="togglePassword"
-                    >
-                        👁
-                    </button>
-
-                </div>
-
-            </div>
-
-            <button
-                type="submit"
-                class="login-btn"
-                id="loginBtn"
-            >
-                <span id="loginText">LOGIN</span>
-                <span class="spinner" id="spinner"></span>
-            </button>
-
-            <div id="message" class="message"></div>
-
-        </form>
-
-        <div class="security">
-            Authorized administrators only.<br>
-            Attendance and student data are protected.
-        </div>
-
+    <div class="subtitle">
+        Administrator Login
     </div>
 
-    <div class="footer">
-        Image Processing Based Smart Attendance System
+    <form id="loginForm">
+
+        <label>Email</label>
+
+        <input
+            id="email"
+            type="email"
+            placeholder="admin@admin.com"
+            value="admin@admin.com"
+            required
+        >
+
+        <label>Password</label>
+
+        <input
+            id="password"
+            type="password"
+            placeholder="Enter password"
+            required
+        >
+
+        <button id="loginButton" type="submit">
+            LOGIN
+        </button>
+
+    </form>
+
+    <div id="message"></div>
+
+    <div id="uidBox" class="uid-box">
+        Expected Admin UID:<br>
+        gyXPDTeJARgh1DdLUTO8h2k5Th92
     </div>
 
 </div>
@@ -277,9 +194,9 @@
 
 <script type="module">
 
-    // ============================================================
-    // FIREBASE IMPORTS
-    // ============================================================
+    // =========================================================
+    // FIREBASE
+    // =========================================================
 
     import {
         initializeApp
@@ -288,7 +205,6 @@
     import {
         getAuth,
         signInWithEmailAndPassword,
-        onAuthStateChanged,
         signOut
     } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 
@@ -299,13 +215,14 @@
     } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js";
 
 
-    // ============================================================
-    // FIREBASE CONFIGURATION
-    // ============================================================
+    // =========================================================
+    // CONFIG
+    // =========================================================
 
     const firebaseConfig = {
 
-        apiKey: "AIzaSyCPixQatVPa326_yGej41aD9p5Z5Fyt3Lg",
+        apiKey:
+            "AIzaSyCPixQatVPa326_yGej41aD9p5Z5Fyt3Lg",
 
         authDomain:
             "kolkata-metro-fine.firebaseapp.com",
@@ -327,17 +244,17 @@
     };
 
 
-    // ============================================================
-    // YOUR ADMIN UID
-    // ============================================================
+    // =========================================================
+    // ADMIN UID
+    // =========================================================
 
     const ADMIN_UID =
         "gyXPDTeJARgh1DdLUTO8h2k5Th92";
 
 
-    // ============================================================
-    // INITIALIZE FIREBASE
-    // ============================================================
+    // =========================================================
+    // INITIALIZE
+    // =========================================================
 
     const app =
         initializeApp(firebaseConfig);
@@ -349,273 +266,212 @@
         getDatabase(app);
 
 
-    // ============================================================
+    // =========================================================
     // ELEMENTS
-    // ============================================================
+    // =========================================================
 
-    const loginForm =
+    const form =
         document.getElementById("loginForm");
 
-    const emailInput =
+    const email =
         document.getElementById("email");
 
-    const passwordInput =
+    const password =
         document.getElementById("password");
 
-    const loginBtn =
-        document.getElementById("loginBtn");
-
-    const loginText =
-        document.getElementById("loginText");
-
-    const spinner =
-        document.getElementById("spinner");
+    const button =
+        document.getElementById("loginButton");
 
     const message =
         document.getElementById("message");
 
-    const togglePassword =
-        document.getElementById("togglePassword");
 
-
-    // ============================================================
+    // =========================================================
     // MESSAGE
-    // ============================================================
+    // =========================================================
 
-    function showMessage(text, type = "error") {
+    function showMessage(
+        text,
+        type = "error"
+    ) {
 
         message.textContent = text;
 
-        message.className =
-            "message " + type;
+        message.className = type;
     }
 
 
-    function clearMessage() {
-
-        message.textContent = "";
-
-        message.className = "message";
-    }
-
-
-    // ============================================================
-    // LOADING
-    // ============================================================
-
-    function setLoading(isLoading) {
-
-        loginBtn.disabled = isLoading;
-
-        if (isLoading) {
-
-            loginText.style.display = "none";
-
-            spinner.style.display = "block";
-
-        } else {
-
-            loginText.style.display = "inline";
-
-            spinner.style.display = "none";
-        }
-    }
-
-
-    // ============================================================
-    // PASSWORD VISIBILITY
-    // ============================================================
-
-    togglePassword.addEventListener(
-        "click",
-        () => {
-
-            if (
-                passwordInput.type ===
-                "password"
-            ) {
-
-                passwordInput.type = "text";
-
-                togglePassword.textContent = "🙈";
-
-            } else {
-
-                passwordInput.type = "password";
-
-                togglePassword.textContent = "👁";
-            }
-
-        }
-    );
-
-
-    // ============================================================
-    // CHECK ADMIN
-    // ============================================================
-
-    async function verifyAdmin(user) {
-
-        console.log(
-            "Authenticated UID:",
-            user.uid
-        );
-
-
-        // --------------------------------------------------------
-        // SECURITY CHECK
-        // --------------------------------------------------------
-
-        if (user.uid !== ADMIN_UID) {
-
-            await signOut(auth);
-
-            throw new Error(
-                "This Firebase account is not the configured administrator."
-            );
-        }
-
-
-        // --------------------------------------------------------
-        // READ ADMIN RECORD
-        // --------------------------------------------------------
-
-        const adminRef =
-            ref(
-                db,
-                "admins/" + ADMIN_UID
-            );
-
-
-        const snapshot =
-            await get(adminRef);
-
-
-        if (!snapshot.exists()) {
-
-            throw new Error(
-                "Admin database record is missing. Create admins/" +
-                ADMIN_UID +
-                " in Realtime Database."
-            );
-        }
-
-
-        const adminData =
-            snapshot.val();
-
-
-        console.log(
-            "Admin database record:",
-            adminData
-        );
-
-
-        // --------------------------------------------------------
-        // ACTIVE CHECK
-        // --------------------------------------------------------
-
-        if (
-            adminData.active !== true
-        ) {
-
-            throw new Error(
-                "Administrator account is disabled."
-            );
-        }
-
-
-        // --------------------------------------------------------
-        // ROLE CHECK
-        // --------------------------------------------------------
-
-        if (
-            adminData.role !== "admin"
-        ) {
-
-            throw new Error(
-                "The Firebase account does not have admin role."
-            );
-        }
-
-
-        return true;
-    }
-
-
-    // ============================================================
+    // =========================================================
     // LOGIN
-    // ============================================================
+    // =========================================================
 
-    loginForm.addEventListener(
+    form.addEventListener(
         "submit",
         async (event) => {
 
             event.preventDefault();
 
-            clearMessage();
+            message.className = "";
 
-            const email =
-                emailInput.value.trim();
+            message.textContent = "";
 
-            const password =
-                passwordInput.value;
+            button.disabled = true;
 
-
-            if (!email || !password) {
-
-                showMessage(
-                    "Please enter your admin email and password."
-                );
-
-                return;
-            }
-
-
-            setLoading(true);
+            button.textContent =
+                "Checking...";
 
 
             try {
 
-                // ------------------------------------------------
+                // =================================================
+                // STEP 1
                 // FIREBASE AUTHENTICATION
-                // ------------------------------------------------
+                // =================================================
 
-                const credential =
+                showMessage(
+                    "Authenticating...",
+                    "info"
+                );
+
+
+                const result =
                     await signInWithEmailAndPassword(
                         auth,
-                        email,
-                        password
+                        email.value.trim(),
+                        password.value
                     );
 
 
                 const user =
-                    credential.user;
+                    result.user;
 
 
                 console.log(
-                    "Firebase login successful."
+                    "LOGIN SUCCESS"
                 );
 
                 console.log(
-                    "User UID:",
+                    "Email:",
+                    user.email
+                );
+
+                console.log(
+                    "UID:",
                     user.uid
                 );
 
 
-                // ------------------------------------------------
-                // ADMIN VERIFICATION
-                // ------------------------------------------------
+                // =================================================
+                // STEP 2
+                // UID CHECK
+                // =================================================
 
-                await verifyAdmin(user);
+                if (
+                    user.uid !== ADMIN_UID
+                ) {
+
+                    await signOut(auth);
+
+                    throw new Error(
+                        "Wrong Firebase account. Logged-in UID is: " +
+                        user.uid +
+                        " but expected UID is: " +
+                        ADMIN_UID
+                    );
+                }
 
 
-                // ------------------------------------------------
-                // SUCCESS
-                // ------------------------------------------------
+                // =================================================
+                // STEP 3
+                // DATABASE ADMIN RECORD
+                // =================================================
 
                 showMessage(
-                    "Administrator verified. Opening dashboard...",
+                    "Authentication successful. Checking admin record...",
+                    "info"
+                );
+
+
+                const adminReference =
+                    ref(
+                        db,
+                        "admins/" + ADMIN_UID
+                    );
+
+
+                const snapshot =
+                    await get(adminReference);
+
+
+                console.log(
+                    "Database path:",
+                    "admins/" + ADMIN_UID
+                );
+
+
+                if (!snapshot.exists()) {
+
+                    await signOut(auth);
+
+                    throw new Error(
+                        "ADMIN RECORD NOT FOUND.\n\n" +
+                        "Create this exact database path:\n\n" +
+                        "admins/" +
+                        ADMIN_UID
+                    );
+                }
+
+
+                const admin =
+                    snapshot.val();
+
+
+                console.log(
+                    "Admin data:",
+                    admin
+                );
+
+
+                // =================================================
+                // STEP 4
+                // ACTIVE CHECK
+                // =================================================
+
+                if (
+                    admin.active !== true
+                ) {
+
+                    await signOut(auth);
+
+                    throw new Error(
+                        "Admin account exists but active is not true."
+                    );
+                }
+
+
+                // =================================================
+                // STEP 5
+                // ROLE CHECK
+                // =================================================
+
+                if (
+                    admin.role !== "admin"
+                ) {
+
+                    await signOut(auth);
+
+                    throw new Error(
+                        "Admin record exists but role is not 'admin'."
+                    );
+                }
+
+
+                // =================================================
+                // SUCCESS
+                // =================================================
+
+                showMessage(
+                    "Login successful. Opening dashboard...",
                     "success"
                 );
 
@@ -623,9 +479,8 @@
                 setTimeout(
                     () => {
 
-                        window.location.replace(
-                            "classes.html"
-                        );
+                        window.location.href =
+                            "classes.html";
 
                     },
                     700
@@ -640,19 +495,20 @@
                 );
 
 
-                let errorMessage =
-                    error.message;
+                let errorText =
+                    error.message ||
+                    "Login failed.";
 
 
-                // Firebase errors
+                // Firebase authentication errors
 
                 if (
                     error.code ===
                     "auth/invalid-credential"
                 ) {
 
-                    errorMessage =
-                        "Incorrect admin email or password.";
+                    errorText =
+                        "Invalid email or password.";
                 }
 
                 else if (
@@ -660,8 +516,8 @@
                     "auth/invalid-email"
                 ) {
 
-                    errorMessage =
-                        "Please enter a valid email address.";
+                    errorText =
+                        "Invalid email address.";
                 }
 
                 else if (
@@ -669,8 +525,8 @@
                     "auth/too-many-requests"
                 ) {
 
-                    errorMessage =
-                        "Too many login attempts. Please wait and try again.";
+                    errorText =
+                        "Too many failed login attempts. Try again later.";
                 }
 
                 else if (
@@ -678,7 +534,7 @@
                     "auth/network-request-failed"
                 ) {
 
-                    errorMessage =
+                    errorText =
                         "Network error. Check your internet connection.";
                 }
 
@@ -687,109 +543,21 @@
                     "PERMISSION_DENIED"
                 ) {
 
-                    errorMessage =
-                        "Database permission denied. Check your Firebase Realtime Database rules.";
+                    errorText =
+                        "Realtime Database permission denied.";
                 }
 
 
                 showMessage(
-                    errorMessage ||
-                    "Login failed."
+                    errorText,
+                    "error"
                 );
 
 
-                // Make sure failed authentication
-                // does not remain active.
+                button.disabled = false;
 
-                try {
-
-                    await signOut(auth);
-
-                } catch (signOutError) {
-
-                    console.error(
-                        signOutError
-                    );
-                }
-
-
-                setLoading(false);
-            }
-
-        }
-    );
-
-
-    // ============================================================
-    // CHECK EXISTING SESSION
-    // ============================================================
-
-    onAuthStateChanged(
-        auth,
-        async (user) => {
-
-            if (!user) {
-
-                return;
-            }
-
-
-            try {
-
-                // ------------------------------------------------
-                // ONLY YOUR ADMIN UID
-                // ------------------------------------------------
-
-                if (
-                    user.uid !== ADMIN_UID
-                ) {
-
-                    await signOut(auth);
-
-                    return;
-                }
-
-
-                // ------------------------------------------------
-                // CHECK DATABASE
-                // ------------------------------------------------
-
-                const adminRef =
-                    ref(
-                        db,
-                        "admins/" + ADMIN_UID
-                    );
-
-
-                const snapshot =
-                    await get(adminRef);
-
-
-                if (
-                    snapshot.exists()
-                    &&
-                    snapshot.val().active === true
-                    &&
-                    snapshot.val().role === "admin"
-                ) {
-
-                    console.log(
-                        "Existing administrator session found."
-                    );
-
-
-                    window.location.replace(
-                        "classes.html"
-                    );
-                }
-
-            } catch (error) {
-
-                console.error(
-                    "Existing session check failed:",
-                    error
-                );
-
+                button.textContent =
+                    "LOGIN";
             }
 
         }
