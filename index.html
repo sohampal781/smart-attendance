@@ -1,10 +1,11 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Smart Lab Attendance | Admin</title>
+    <title>Smart Lab Attendance | Admin Login</title>
 
     <style>
         * {
@@ -16,11 +17,11 @@
 
         body {
             min-height: 100vh;
-            background: linear-gradient(135deg, #0f172a, #1e293b);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #fff;
+            background: linear-gradient(135deg, #0f172a, #1e3a8a);
+            color: #1e293b;
         }
 
         .container {
@@ -31,37 +32,37 @@
 
         .card {
             background: #ffffff;
-            color: #1e293b;
-            border-radius: 18px;
+            border-radius: 20px;
             padding: 35px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+            box-shadow: 0 25px 70px rgba(0,0,0,0.35);
         }
 
         .logo {
-            width: 70px;
-            height: 70px;
+            width: 72px;
+            height: 72px;
             margin: 0 auto 18px;
             border-radius: 18px;
             background: #2563eb;
+            color: white;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 32px;
+            font-size: 28px;
             font-weight: bold;
-            color: white;
         }
 
         h1 {
             text-align: center;
             font-size: 25px;
-            margin-bottom: 8px;
+            color: #0f172a;
         }
 
         .subtitle {
             text-align: center;
             color: #64748b;
-            font-size: 14px;
+            margin-top: 7px;
             margin-bottom: 30px;
+            font-size: 14px;
         }
 
         .form-group {
@@ -70,37 +71,37 @@
 
         label {
             display: block;
-            font-size: 14px;
-            font-weight: 600;
             margin-bottom: 7px;
+            font-size: 14px;
+            font-weight: 700;
         }
 
         input {
             width: 100%;
-            padding: 13px 14px;
+            height: 48px;
             border: 1px solid #cbd5e1;
             border-radius: 9px;
-            outline: none;
+            padding: 0 14px;
             font-size: 15px;
-            transition: 0.2s;
+            outline: none;
         }
 
         input:focus {
             border-color: #2563eb;
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.12);
         }
 
-        .password-wrapper {
+        .password-box {
             position: relative;
         }
 
-        .password-wrapper input {
+        .password-box input {
             padding-right: 48px;
         }
 
         .toggle-password {
             position: absolute;
-            right: 13px;
+            right: 10px;
             top: 50%;
             transform: translateY(-50%);
             border: none;
@@ -111,15 +112,14 @@
 
         .login-btn {
             width: 100%;
-            padding: 14px;
+            height: 48px;
             border: none;
             border-radius: 9px;
             background: #2563eb;
             color: white;
             font-size: 16px;
-            font-weight: 700;
+            font-weight: bold;
             cursor: pointer;
-            transition: 0.2s;
         }
 
         .login-btn:hover {
@@ -134,66 +134,59 @@
         .message {
             display: none;
             margin-top: 15px;
-            padding: 11px 13px;
+            padding: 12px;
             border-radius: 8px;
             font-size: 13px;
-            line-height: 1.4;
+            line-height: 1.5;
         }
 
-        .error {
+        .message.error {
             display: block;
             background: #fee2e2;
             color: #991b1b;
         }
 
-        .success {
+        .message.success {
             display: block;
             background: #dcfce7;
             color: #166534;
         }
 
-        .footer {
-            text-align: center;
-            margin-top: 22px;
-            font-size: 12px;
-            color: #94a3b8;
+        .message.info {
+            display: block;
+            background: #dbeafe;
+            color: #1e40af;
         }
 
-        .security-note {
+        .security {
             margin-top: 20px;
-            padding: 12px;
-            background: #f8fafc;
-            border-radius: 8px;
-            color: #64748b;
+            text-align: center;
             font-size: 11px;
             line-height: 1.5;
-            text-align: center;
+            color: #64748b;
         }
 
-        .loading {
+        .footer {
+            text-align: center;
+            margin-top: 18px;
+            color: #cbd5e1;
+            font-size: 11px;
+        }
+
+        .spinner {
             display: none;
-            width: 17px;
-            height: 17px;
+            width: 18px;
+            height: 18px;
+            margin: auto;
             border: 2px solid rgba(255,255,255,0.4);
             border-top-color: white;
             border-radius: 50%;
             animation: spin 0.7s linear infinite;
-            margin: 0 auto;
         }
 
         @keyframes spin {
             to {
                 transform: rotate(360deg);
-            }
-        }
-
-        @media (max-width: 480px) {
-            .card {
-                padding: 28px 22px;
-            }
-
-            h1 {
-                font-size: 22px;
             }
         }
     </style>
@@ -233,7 +226,7 @@
 
                 <label for="password">Password</label>
 
-                <div class="password-wrapper">
+                <div class="password-box">
 
                     <input
                         type="password"
@@ -247,7 +240,6 @@
                         type="button"
                         class="toggle-password"
                         id="togglePassword"
-                        aria-label="Show password"
                     >
                         👁
                     </button>
@@ -262,25 +254,22 @@
                 id="loginBtn"
             >
                 <span id="loginText">LOGIN</span>
-                <span class="loading" id="loading"></span>
+                <span class="spinner" id="spinner"></span>
             </button>
 
-            <div
-                id="message"
-                class="message"
-            ></div>
+            <div id="message" class="message"></div>
 
         </form>
 
-        <div class="security-note">
+        <div class="security">
             Authorized administrators only.<br>
-            All class, student and attendance records are protected.
+            Attendance and student data are protected.
         </div>
 
     </div>
 
     <div class="footer">
-        Smart Image Processing Based Attendance System
+        Image Processing Based Smart Attendance System
     </div>
 
 </div>
@@ -288,22 +277,26 @@
 
 <script type="module">
 
-    import { initializeApp }
-        from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+    // ============================================================
+    // FIREBASE IMPORTS
+    // ============================================================
+
+    import {
+        initializeApp
+    } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
 
     import {
         getAuth,
         signInWithEmailAndPassword,
-        onAuthStateChanged
-    }
-    from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+        onAuthStateChanged,
+        signOut
+    } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 
     import {
         getDatabase,
         ref,
         get
-    }
-    from "https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js";
+    } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js";
 
 
     // ============================================================
@@ -335,18 +328,29 @@
 
 
     // ============================================================
+    // YOUR ADMIN UID
+    // ============================================================
+
+    const ADMIN_UID =
+        "gyXPDTeJARgh1DdLUTO8h2k5Th92";
+
+
+    // ============================================================
     // INITIALIZE FIREBASE
     // ============================================================
 
-    const app = initializeApp(firebaseConfig);
+    const app =
+        initializeApp(firebaseConfig);
 
-    const auth = getAuth(app);
+    const auth =
+        getAuth(app);
 
-    const db = getDatabase(app);
+    const db =
+        getDatabase(app);
 
 
     // ============================================================
-    // DOM ELEMENTS
+    // ELEMENTS
     // ============================================================
 
     const loginForm =
@@ -364,8 +368,8 @@
     const loginText =
         document.getElementById("loginText");
 
-    const loading =
-        document.getElementById("loading");
+    const spinner =
+        document.getElementById("spinner");
 
     const message =
         document.getElementById("message");
@@ -375,7 +379,7 @@
 
 
     // ============================================================
-    // SHOW MESSAGE
+    // MESSAGE
     // ============================================================
 
     function showMessage(text, type = "error") {
@@ -387,10 +391,6 @@
     }
 
 
-    // ============================================================
-    // CLEAR MESSAGE
-    // ============================================================
-
     function clearMessage() {
 
         message.textContent = "";
@@ -400,234 +400,328 @@
 
 
     // ============================================================
-    // LOADING STATE
+    // LOADING
     // ============================================================
 
-    function setLoading(state) {
+    function setLoading(isLoading) {
 
-        loginBtn.disabled = state;
+        loginBtn.disabled = isLoading;
 
-        if (state) {
+        if (isLoading) {
 
             loginText.style.display = "none";
 
-            loading.style.display = "block";
+            spinner.style.display = "block";
 
         } else {
 
             loginText.style.display = "inline";
 
-            loading.style.display = "none";
+            spinner.style.display = "none";
         }
     }
 
 
     // ============================================================
-    // SHOW / HIDE PASSWORD
+    // PASSWORD VISIBILITY
     // ============================================================
 
-    togglePassword.addEventListener("click", () => {
+    togglePassword.addEventListener(
+        "click",
+        () => {
 
-        if (passwordInput.type === "password") {
+            if (
+                passwordInput.type ===
+                "password"
+            ) {
 
-            passwordInput.type = "text";
+                passwordInput.type = "text";
 
-            togglePassword.textContent = "🙈";
+                togglePassword.textContent = "🙈";
 
-        } else {
+            } else {
 
-            passwordInput.type = "password";
+                passwordInput.type = "password";
 
-            togglePassword.textContent = "👁";
+                togglePassword.textContent = "👁";
+            }
+
+        }
+    );
+
+
+    // ============================================================
+    // CHECK ADMIN
+    // ============================================================
+
+    async function verifyAdmin(user) {
+
+        console.log(
+            "Authenticated UID:",
+            user.uid
+        );
+
+
+        // --------------------------------------------------------
+        // SECURITY CHECK
+        // --------------------------------------------------------
+
+        if (user.uid !== ADMIN_UID) {
+
+            await signOut(auth);
+
+            throw new Error(
+                "This Firebase account is not the configured administrator."
+            );
         }
 
-    });
+
+        // --------------------------------------------------------
+        // READ ADMIN RECORD
+        // --------------------------------------------------------
+
+        const adminRef =
+            ref(
+                db,
+                "admins/" + ADMIN_UID
+            );
+
+
+        const snapshot =
+            await get(adminRef);
+
+
+        if (!snapshot.exists()) {
+
+            throw new Error(
+                "Admin database record is missing. Create admins/" +
+                ADMIN_UID +
+                " in Realtime Database."
+            );
+        }
+
+
+        const adminData =
+            snapshot.val();
+
+
+        console.log(
+            "Admin database record:",
+            adminData
+        );
+
+
+        // --------------------------------------------------------
+        // ACTIVE CHECK
+        // --------------------------------------------------------
+
+        if (
+            adminData.active !== true
+        ) {
+
+            throw new Error(
+                "Administrator account is disabled."
+            );
+        }
+
+
+        // --------------------------------------------------------
+        // ROLE CHECK
+        // --------------------------------------------------------
+
+        if (
+            adminData.role !== "admin"
+        ) {
+
+            throw new Error(
+                "The Firebase account does not have admin role."
+            );
+        }
+
+
+        return true;
+    }
 
 
     // ============================================================
     // LOGIN
     // ============================================================
 
-    loginForm.addEventListener("submit", async (event) => {
+    loginForm.addEventListener(
+        "submit",
+        async (event) => {
 
-        event.preventDefault();
+            event.preventDefault();
 
-        clearMessage();
+            clearMessage();
 
-        const email =
-            emailInput.value.trim();
+            const email =
+                emailInput.value.trim();
 
-        const password =
-            passwordInput.value;
-
-
-        if (!email || !password) {
-
-            showMessage(
-                "Please enter email and password."
-            );
-
-            return;
-        }
+            const password =
+                passwordInput.value;
 
 
-        setLoading(true);
-
-
-        try {
-
-            const userCredential =
-                await signInWithEmailAndPassword(
-                    auth,
-                    email,
-                    password
-                );
-
-
-            const user =
-                userCredential.user;
-
-
-            // ----------------------------------------------------
-            // CHECK ADMIN RECORD
-            // ----------------------------------------------------
-
-            const adminRef =
-                ref(
-                    db,
-                    "admins/" + user.uid
-                );
-
-
-            const snapshot =
-                await get(adminRef);
-
-
-            if (!snapshot.exists()) {
-
-                await auth.signOut();
+            if (!email || !password) {
 
                 showMessage(
-                    "This account is authenticated but is not registered as an administrator."
+                    "Please enter your admin email and password."
                 );
-
-                setLoading(false);
 
                 return;
             }
 
 
-            const adminData =
-                snapshot.val();
+            setLoading(true);
 
 
-            if (
-                adminData.active === false
-            ) {
+            try {
 
-                await auth.signOut();
+                // ------------------------------------------------
+                // FIREBASE AUTHENTICATION
+                // ------------------------------------------------
 
-                showMessage(
-                    "This administrator account has been disabled."
+                const credential =
+                    await signInWithEmailAndPassword(
+                        auth,
+                        email,
+                        password
+                    );
+
+
+                const user =
+                    credential.user;
+
+
+                console.log(
+                    "Firebase login successful."
                 );
 
-                setLoading(false);
-
-                return;
-            }
-
-
-            // ----------------------------------------------------
-            // LOGIN SUCCESS
-            // ----------------------------------------------------
-
-            showMessage(
-                "Login successful. Opening dashboard...",
-                "success"
-            );
+                console.log(
+                    "User UID:",
+                    user.uid
+                );
 
 
-            setTimeout(() => {
+                // ------------------------------------------------
+                // ADMIN VERIFICATION
+                // ------------------------------------------------
 
-                window.location.href =
-                    "classes.html";
-
-            }, 700);
-
-
-        } catch (error) {
-
-            console.error(
-                "Firebase login error:",
-                error
-            );
+                await verifyAdmin(user);
 
 
-            let errorMessage =
-                "Login failed. Please try again.";
+                // ------------------------------------------------
+                // SUCCESS
+                // ------------------------------------------------
+
+                showMessage(
+                    "Administrator verified. Opening dashboard...",
+                    "success"
+                );
 
 
-            switch (error.code) {
+                setTimeout(
+                    () => {
 
-                case "auth/invalid-credential":
+                        window.location.replace(
+                            "classes.html"
+                        );
 
-                    errorMessage =
-                        "Invalid email or password.";
-
-                    break;
-
-
-                case "auth/user-not-found":
-
-                    errorMessage =
-                        "No administrator account exists with this email.";
-
-                    break;
+                    },
+                    700
+                );
 
 
-                case "auth/wrong-password":
+            } catch (error) {
+
+                console.error(
+                    "LOGIN ERROR:",
+                    error
+                );
+
+
+                let errorMessage =
+                    error.message;
+
+
+                // Firebase errors
+
+                if (
+                    error.code ===
+                    "auth/invalid-credential"
+                ) {
 
                     errorMessage =
-                        "Incorrect password.";
+                        "Incorrect admin email or password.";
+                }
 
-                    break;
-
-
-                case "auth/invalid-email":
+                else if (
+                    error.code ===
+                    "auth/invalid-email"
+                ) {
 
                     errorMessage =
                         "Please enter a valid email address.";
+                }
 
-                    break;
-
-
-                case "auth/too-many-requests":
+                else if (
+                    error.code ===
+                    "auth/too-many-requests"
+                ) {
 
                     errorMessage =
-                        "Too many failed attempts. Please try again later.";
+                        "Too many login attempts. Please wait and try again.";
+                }
 
-                    break;
-
-
-                case "auth/network-request-failed":
+                else if (
+                    error.code ===
+                    "auth/network-request-failed"
+                ) {
 
                     errorMessage =
                         "Network error. Check your internet connection.";
+                }
 
-                    break;
+                else if (
+                    error.code ===
+                    "PERMISSION_DENIED"
+                ) {
+
+                    errorMessage =
+                        "Database permission denied. Check your Firebase Realtime Database rules.";
+                }
+
+
+                showMessage(
+                    errorMessage ||
+                    "Login failed."
+                );
+
+
+                // Make sure failed authentication
+                // does not remain active.
+
+                try {
+
+                    await signOut(auth);
+
+                } catch (signOutError) {
+
+                    console.error(
+                        signOutError
+                    );
+                }
+
+
+                setLoading(false);
             }
 
-
-            showMessage(errorMessage);
-
-            setLoading(false);
         }
-
-    });
+    );
 
 
     // ============================================================
-    // CHECK EXISTING LOGIN
+    // CHECK EXISTING SESSION
     // ============================================================
 
     onAuthStateChanged(
@@ -635,16 +729,35 @@
         async (user) => {
 
             if (!user) {
+
                 return;
             }
 
 
             try {
 
+                // ------------------------------------------------
+                // ONLY YOUR ADMIN UID
+                // ------------------------------------------------
+
+                if (
+                    user.uid !== ADMIN_UID
+                ) {
+
+                    await signOut(auth);
+
+                    return;
+                }
+
+
+                // ------------------------------------------------
+                // CHECK DATABASE
+                // ------------------------------------------------
+
                 const adminRef =
                     ref(
                         db,
-                        "admins/" + user.uid
+                        "admins/" + ADMIN_UID
                     );
 
 
@@ -653,18 +766,27 @@
 
 
                 if (
-                    snapshot.exists() &&
-                    snapshot.val().active !== false
+                    snapshot.exists()
+                    &&
+                    snapshot.val().active === true
+                    &&
+                    snapshot.val().role === "admin"
                 ) {
 
-                    window.location.href =
-                        "classes.html";
+                    console.log(
+                        "Existing administrator session found."
+                    );
+
+
+                    window.location.replace(
+                        "classes.html"
+                    );
                 }
 
             } catch (error) {
 
                 console.error(
-                    "Admin verification error:",
+                    "Existing session check failed:",
                     error
                 );
 
@@ -677,3 +799,4 @@
 
 </body>
 </html>
+```
