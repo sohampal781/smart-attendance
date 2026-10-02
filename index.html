@@ -538,7 +538,119 @@ th {
     }
 }
 
+
+/* =========================================================
+   LIVE MONITORING
+========================================================= */
+.monitor-toolbar{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:12px;
+    margin-bottom:18px;
+}
+.monitor-toolbar .form-group{margin-bottom:0;}
+.monitor-status{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    padding:11px 13px;
+    border-radius:8px;
+    background:#f8fafc;
+    border:1px solid #e2e8f0;
+    font-size:13px;
+    font-weight:600;
+}
+.dot{
+    width:10px;
+    height:10px;
+    border-radius:50%;
+    background:#94a3b8;
+}
+.dot.green{background:#16a34a;}
+.dot.red{background:#dc2626;}
+.dot.amber{background:#f59e0b;}
+.monitor-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:18px;
+}
+.monitor-camera{
+    background:#0f172a;
+    border-radius:12px;
+    overflow:hidden;
+    border:2px solid #334155;
+}
+.monitor-camera.active-entry{border-color:#16a34a;}
+.monitor-camera.active-exit{border-color:#2563eb;}
+.monitor-camera-header{
+    padding:12px 14px;
+    color:white;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+.monitor-camera-header small{color:#cbd5e1;}
+.monitor-video-wrap{
+    position:relative;
+    background:#020617;
+    aspect-ratio:16/9;
+}
+.monitor-video{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    display:block;
+}
+.monitor-overlay{
+    position:absolute;
+    left:12px;
+    right:12px;
+    bottom:12px;
+    background:rgba(15,23,42,.82);
+    color:white;
+    border-radius:8px;
+    padding:10px;
+    font-size:13px;
+}
+.monitor-camera-controls{
+    padding:12px;
+    background:#fff;
+}
+.monitor-camera-controls select{width:100%;}
+.monitor-events{
+    max-height:340px;
+    overflow:auto;
+}
+.event-row{
+    display:grid;
+    grid-template-columns:90px 1fr 90px 100px;
+    gap:10px;
+    align-items:center;
+    padding:10px 0;
+    border-bottom:1px solid #e2e8f0;
+    font-size:13px;
+}
+.event-in{color:#15803d;font-weight:700;}
+.event-out{color:#1d4ed8;font-weight:700;}
+.monitor-big-status{
+    padding:14px 16px;
+    border-radius:10px;
+    background:#eff6ff;
+    color:#1e40af;
+    margin-bottom:18px;
+    font-weight:600;
+}
+@media(max-width:1000px){
+    .monitor-toolbar{grid-template-columns:1fr 1fr;}
+    .monitor-grid{grid-template-columns:1fr;}
+}
+@media(max-width:650px){
+    .monitor-toolbar{grid-template-columns:1fr;}
+    .event-row{grid-template-columns:1fr 1fr;}
+}
+
 </style>
+<script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 </head>
 
 
@@ -647,6 +759,13 @@ th {
 
         <button
             class="nav-btn active"
+            data-page="monitoringPage"
+        >
+            Live Monitoring
+        </button>
+
+        <button
+            class="nav-btn"
             data-page="dashboardPage"
         >
             Dashboard
@@ -720,6 +839,141 @@ th {
 
         <div class="content">
 
+
+
+            <!-- =================================================
+                 LIVE MONITORING
+            ================================================= -->
+            <section
+                id="monitoringPage"
+                class="page active"
+            >
+
+                <div class="monitor-big-status" id="monitorMainStatus">
+                    Initializing live attendance monitoring...
+                </div>
+
+                <div class="card">
+                    <div class="card-title">Camera Configuration</div>
+
+                    <div class="monitor-toolbar">
+
+                        <div class="form-group">
+                            <label>Attendance Classroom</label>
+                            <select class="form-control" id="monitorClassSelect">
+                                <option value="">Select Class</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Camera Mode</label>
+                            <select class="form-control" id="cameraMode">
+                                <option value="dual">Two Camera Mode</option>
+                                <option value="single">Single Camera Mode</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Entry Camera</label>
+                            <select class="form-control" id="entryCameraSelect">
+                                <option value="">Select webcam</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Exit Camera</label>
+                            <select class="form-control" id="exitCameraSelect">
+                                <option value="">Select webcam</option>
+                            </select>
+                        </div>
+
+                    </div>
+
+                    <div class="form-actions">
+                        <button class="btn btn-success" id="startMonitoring">
+                            START SCANNING
+                        </button>
+                        <button class="btn btn-danger" id="stopMonitoring">
+                            STOP SCANNING
+                        </button>
+                        <button class="btn btn-secondary" id="refreshCameras">
+                            REFRESH WEBCAMS
+                        </button>
+                        <button class="btn btn-primary" id="switchSingleRole">
+                            SWITCH SINGLE CAMERA TO EXIT
+                        </button>
+                    </div>
+
+                    <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
+                        <div class="monitor-status">
+                            <span class="dot" id="entryStatusDot"></span>
+                            Entry: <span id="entryStatusText">OFF</span>
+                        </div>
+                        <div class="monitor-status">
+                            <span class="dot" id="exitStatusDot"></span>
+                            Exit: <span id="exitStatusText">OFF</span>
+                        </div>
+                        <div class="monitor-status">
+                            <span class="dot" id="tabStatusDot"></span>
+                            Tab: <span id="tabStatusText">ACTIVE</span>
+                        </div>
+                        <div class="monitor-status">
+                            <span class="dot" id="faceStatusDot"></span>
+                            Face AI: <span id="faceStatusText">NOT LOADED</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="monitor-grid">
+
+                    <div class="card" style="padding:0;overflow:hidden;">
+                        <div class="monitor-camera active-entry" id="entryCameraPanel">
+                            <div class="monitor-camera-header">
+                                <div><strong>ENTRY CAMERA</strong><br><small id="entryCameraName">Not selected</small></div>
+                                <span id="entryLiveBadge">OFFLINE</span>
+                            </div>
+                            <div class="monitor-video-wrap">
+                                <video id="entryVideo" class="monitor-video" autoplay muted playsinline></video>
+                                <div class="monitor-overlay" id="entryOverlay">
+                                    Waiting for camera...
+                                </div>
+                            </div>
+                            <div class="monitor-camera-controls">
+                                <small id="entryDetectionText">No detection</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card" style="padding:0;overflow:hidden;">
+                        <div class="monitor-camera active-exit" id="exitCameraPanel">
+                            <div class="monitor-camera-header">
+                                <div><strong>EXIT CAMERA</strong><br><small id="exitCameraName">Not selected</small></div>
+                                <span id="exitLiveBadge">OFFLINE</span>
+                            </div>
+                            <div class="monitor-video-wrap">
+                                <video id="exitVideo" class="monitor-video" autoplay muted playsinline></video>
+                                <div class="monitor-overlay" id="exitOverlay">
+                                    Waiting for camera...
+                                </div>
+                            </div>
+                            <div class="monitor-camera-controls">
+                                <small id="exitDetectionText">No detection</small>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="card">
+                    <div class="card-title">Live Attendance Events</div>
+                    <div class="monitor-events" id="liveEvents">
+                        <div style="color:#64748b;padding:12px 0;">
+                            No events yet.
+                        </div>
+                    </div>
+                </div>
+
+            </section>
 
             <!-- =================================================
                  DASHBOARD
@@ -1545,6 +1799,7 @@ import {
     push,
     set,
     get,
+    update,
     remove
 } from
 "https://www.gstatic.com/firebasejs/12.19.0/firebase-database.js";
@@ -1736,7 +1991,9 @@ loginForm.addEventListener(
                     application.style.display =
                         "block";
 
-                    loadAllData();
+                    await loadAllData();
+                    await enumerateCameras();
+                    await autoStartSavedMonitoring();
 
                 },
                 500
@@ -1809,6 +2066,8 @@ document
 .addEventListener(
     "click",
     async () => {
+
+        stopMonitoring();
 
         if (
             cameraStream
@@ -1919,6 +2178,1381 @@ navButtons.forEach(
 
     }
 );
+
+
+
+/* =========================================================
+   LIVE CAMERA / FACE ATTENDANCE MONITORING
+========================================================= */
+
+const FACE_MODEL_URL =
+    "https://justadudewhohacks.github.io/face-api.js/models";
+
+let faceModelsLoaded = false;
+let monitoringActive = false;
+let monitoringLoop = null;
+let monitoringClassId = "";
+let monitoringDate = "";
+let entryStream = null;
+let exitStream = null;
+let entryDeviceId = "";
+let exitDeviceId = "";
+let cameraDevices = [];
+let cameraScanBusy = {
+    entry: false,
+    exit: false
+};
+let lastRecognition = {
+    entry: {},
+    exit: {}
+};
+let lastEventTime = {};
+let singleCameraRole = "entry";
+
+async function loadFaceModels() {
+
+    if (faceModelsLoaded) return true;
+
+    setFaceStatus("LOADING", "amber");
+
+    try {
+
+        await faceapi.nets.tinyFaceDetector.loadFromUri(FACE_MODEL_URL);
+        await faceapi.nets.faceLandmark68Net.loadFromUri(FACE_MODEL_URL);
+        await faceapi.nets.faceRecognitionNet.loadFromUri(FACE_MODEL_URL);
+
+        faceModelsLoaded = true;
+
+        setFaceStatus("READY", "green");
+
+        return true;
+
+    } catch (error) {
+
+        console.error("Face model loading failed:", error);
+
+        setFaceStatus("FAILED", "red");
+
+        setMonitorStatus(
+            "Face AI could not load. Check Internet access and model URL.",
+            "error"
+        );
+
+        return false;
+    }
+}
+
+function setFaceStatus(text, color) {
+
+    const textEl = document.getElementById("faceStatusText");
+    const dot = document.getElementById("faceStatusDot");
+
+    if (textEl) textEl.textContent = text;
+
+    if (dot) {
+        dot.className = "dot " + color;
+    }
+}
+
+function setMonitorStatus(text, type = "info") {
+
+    const el =
+        document.getElementById("monitorMainStatus");
+
+    if (!el) return;
+
+    el.textContent = text;
+
+    if (type === "error") {
+        el.style.background = "#fee2e2";
+        el.style.color = "#991b1b";
+    } else if (type === "success") {
+        el.style.background = "#dcfce7";
+        el.style.color = "#166534";
+    } else {
+        el.style.background = "#eff6ff";
+        el.style.color = "#1e40af";
+    }
+}
+
+function setRoleStatus(role, text, color) {
+
+    const prefix =
+        role === "entry"
+            ? "entry"
+            : "exit";
+
+    const textEl =
+        document.getElementById(prefix + "StatusText");
+
+    const dot =
+        document.getElementById(prefix + "StatusDot");
+
+    if (textEl) textEl.textContent = text;
+
+    if (dot) dot.className = "dot " + color;
+}
+
+function restoreMonitoringConfiguration() {
+
+    try {
+
+        const raw =
+            localStorage.getItem(
+                "smartAttendanceCameraConfig"
+            );
+
+        if (!raw) return;
+
+        const config =
+            JSON.parse(raw);
+
+        if (config.classId) {
+            const classSelect =
+                document.getElementById(
+                    "monitorClassSelect"
+                );
+
+            if (classSelect) {
+                classSelect.value =
+                    config.classId;
+            }
+        }
+
+        if (config.mode) {
+            document.getElementById(
+                "cameraMode"
+            ).value = config.mode;
+        }
+
+        if (config.entryDeviceId) {
+            entryDeviceId =
+                config.entryDeviceId;
+        }
+
+        if (config.exitDeviceId) {
+            exitDeviceId =
+                config.exitDeviceId;
+        }
+
+    } catch (error) {
+        console.warn(
+            "Could not restore camera configuration.",
+            error
+        );
+    }
+}
+
+async function enumerateCameras() {
+
+    try {
+
+        await navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: false
+        }).then(stream => {
+            stream.getTracks().forEach(track => track.stop());
+        });
+
+        const devices =
+            await navigator.mediaDevices.enumerateDevices();
+
+        cameraDevices =
+            devices.filter(
+                device => device.kind === "videoinput"
+            );
+
+        populateCameraSelects();
+
+    } catch (error) {
+
+        console.error(error);
+
+        setMonitorStatus(
+            "Webcam permission is required for live attendance.",
+            "error"
+        );
+    }
+}
+
+function populateCameraSelects() {
+
+    restoreMonitoringConfiguration();
+
+    const entry =
+        document.getElementById("entryCameraSelect");
+
+    const exit =
+        document.getElementById("exitCameraSelect");
+
+    if (!entry || !exit) return;
+
+    const oldEntry = entryDeviceId;
+    const oldExit = exitDeviceId;
+
+    entry.innerHTML =
+        '<option value="">Select webcam</option>';
+
+    exit.innerHTML =
+        '<option value="">Select webcam</option>';
+
+    cameraDevices.forEach((device, index) => {
+
+        const label =
+            device.label ||
+            ("Webcam " + (index + 1));
+
+        const option1 =
+            new Option(label, device.deviceId);
+
+        const option2 =
+            new Option(label, device.deviceId);
+
+        entry.appendChild(option1);
+        exit.appendChild(option2);
+    });
+
+    if (oldEntry) entry.value = oldEntry;
+    if (oldExit) exit.value = oldExit;
+
+    if (!entry.value && cameraDevices[0]) {
+        entry.value = cameraDevices[0].deviceId;
+    }
+
+    if (!exit.value && cameraDevices[1]) {
+        exit.value = cameraDevices[1].deviceId;
+    }
+
+    if (!exit.value && cameraDevices[0]) {
+        exit.value = cameraDevices[0].deviceId;
+    }
+
+    updateCameraLabels();
+}
+
+function updateCameraLabels() {
+
+    const entry =
+        document.getElementById("entryCameraSelect");
+
+    const exit =
+        document.getElementById("exitCameraSelect");
+
+    const entryName =
+        document.getElementById("entryCameraName");
+
+    const exitName =
+        document.getElementById("exitCameraName");
+
+    if (entryName) {
+        const d =
+            cameraDevices.find(
+                x => x.deviceId === entry?.value
+            );
+
+        entryName.textContent =
+            d?.label || "Not selected";
+    }
+
+    if (exitName) {
+        const d =
+            cameraDevices.find(
+                x => x.deviceId === exit?.value
+            );
+
+        exitName.textContent =
+            d?.label || "Not selected";
+    }
+}
+
+async function openCamera(deviceId, videoId) {
+
+    if (!deviceId) {
+        throw new Error("No webcam selected.");
+    }
+
+    const stream =
+        await navigator.mediaDevices.getUserMedia({
+            video: {
+                deviceId: {
+                    exact: deviceId
+                },
+                width: {
+                    ideal: 1280
+                },
+                height: {
+                    ideal: 720
+                },
+                frameRate: {
+                    ideal: 15,
+                    max: 20
+                }
+            },
+            audio: false
+        });
+
+    const video =
+        document.getElementById(videoId);
+
+    video.srcObject = stream;
+
+    await video.play();
+
+    return stream;
+}
+
+function stopStream(stream) {
+
+    if (!stream) return;
+
+    stream.getTracks().forEach(
+        track => track.stop()
+    );
+}
+
+async function autoStartSavedMonitoring() {
+
+    if (!currentUser) return;
+
+    try {
+
+        const raw =
+            localStorage.getItem(
+                "smartAttendanceCameraConfig"
+            );
+
+        if (!raw) return;
+
+        const config =
+            JSON.parse(raw);
+
+        if (
+            !config.classId ||
+            !config.entryDeviceId
+        ) {
+            return;
+        }
+
+        const classSelect =
+            document.getElementById(
+                "monitorClassSelect"
+            );
+
+        if (!classSelect) return;
+
+        classSelect.value =
+            config.classId;
+
+        document.getElementById(
+            "cameraMode"
+        ).value =
+            config.mode || "dual";
+
+        entryDeviceId =
+            config.entryDeviceId;
+
+        exitDeviceId =
+            config.exitDeviceId || "";
+
+        const entrySelect =
+            document.getElementById(
+                "entryCameraSelect"
+            );
+
+        const exitSelect =
+            document.getElementById(
+                "exitCameraSelect"
+            );
+
+        if (entrySelect) {
+            entrySelect.value =
+                entryDeviceId;
+        }
+
+        if (exitSelect) {
+            exitSelect.value =
+                exitDeviceId;
+        }
+
+        // The browser has now been opened by the admin and the
+        // previous camera configuration is known, so scanning can
+        // resume automatically.
+        await startMonitoring();
+
+    } catch (error) {
+
+        console.warn(
+            "Automatic monitoring start skipped:",
+            error
+        );
+    }
+}
+
+async function startMonitoring() {
+
+    if (monitoringActive) return;
+
+    monitoringClassId =
+        document.getElementById(
+            "monitorClassSelect"
+        ).value;
+
+    if (!monitoringClassId) {
+        alert("Select the attendance classroom first.");
+        return;
+    }
+
+    const mode =
+        document.getElementById("cameraMode").value;
+
+    entryDeviceId =
+        document.getElementById(
+            "entryCameraSelect"
+        ).value;
+
+    exitDeviceId =
+        document.getElementById(
+            "exitCameraSelect"
+        ).value;
+
+    if (!entryDeviceId) {
+        alert("Select an entry webcam.");
+        return;
+    }
+
+    if (
+        mode === "dual" &&
+        !exitDeviceId
+    ) {
+        alert("Select an exit webcam.");
+        return;
+    }
+
+    if (
+        mode === "dual" &&
+        entryDeviceId === exitDeviceId
+    ) {
+        alert(
+            "Entry and Exit cameras must be different in Two Camera Mode."
+        );
+        return;
+    }
+
+    localStorage.setItem(
+        "smartAttendanceCameraConfig",
+        JSON.stringify({
+            classId: monitoringClassId,
+            mode,
+            entryDeviceId,
+            exitDeviceId
+        })
+    );
+
+    const modelsReady =
+        await loadFaceModels();
+
+    if (!modelsReady) return;
+
+    monitoringDate =
+        new Date()
+        .toLocaleDateString(
+            "en-CA",
+            {
+                timeZone: "Asia/Kolkata"
+            }
+        );
+
+    try {
+
+        setMonitorStatus(
+            "Starting cameras and face recognition...",
+            "info"
+        );
+
+        stopStream(entryStream);
+        stopStream(exitStream);
+
+        entryStream =
+            await openCamera(
+                entryDeviceId,
+                "entryVideo"
+            );
+
+        setRoleStatus(
+            "entry",
+            "LIVE",
+            "green"
+        );
+
+        document.getElementById(
+            "entryLiveBadge"
+        ).textContent = "LIVE";
+
+        if (mode === "dual") {
+
+            exitStream =
+                await openCamera(
+                    exitDeviceId,
+                    "exitVideo"
+                );
+
+            setRoleStatus(
+                "exit",
+                "LIVE",
+                "green"
+            );
+
+            document.getElementById(
+                "exitLiveBadge"
+            ).textContent = "LIVE";
+
+        } else {
+
+            exitStream = null;
+
+            setRoleStatus(
+                "exit",
+                "STANDBY",
+                "amber"
+            );
+
+            document.getElementById(
+                "exitLiveBadge"
+            ).textContent = "STANDBY";
+        }
+
+        monitoringActive = true;
+
+        setMonitorStatus(
+            mode === "dual"
+                ? "LIVE SCANNING ACTIVE: Entry and Exit cameras are monitoring."
+                : "LIVE SCANNING ACTIVE: Single-camera ENTRY mode.",
+            "success"
+        );
+
+        if (document.hidden) {
+            pauseMonitoringForHiddenTab();
+        } else {
+            beginMonitoringLoop();
+        }
+
+    } catch (error) {
+
+        console.error(error);
+
+        stopMonitoring();
+
+        setMonitorStatus(
+            "Camera start failed: " + error.message,
+            "error"
+        );
+    }
+}
+
+function stopMonitoring() {
+
+    monitoringActive = false;
+
+    if (monitoringLoop) {
+        cancelAnimationFrame(monitoringLoop);
+        monitoringLoop = null;
+    }
+
+    stopStream(entryStream);
+    stopStream(exitStream);
+
+    entryStream = null;
+    exitStream = null;
+
+    document.getElementById("entryVideo").srcObject = null;
+    document.getElementById("exitVideo").srcObject = null;
+
+    document.getElementById(
+        "entryLiveBadge"
+    ).textContent = "OFFLINE";
+
+    document.getElementById(
+        "exitLiveBadge"
+    ).textContent = "OFFLINE";
+
+    setRoleStatus("entry", "OFF", "red");
+    setRoleStatus("exit", "OFF", "red");
+
+    setMonitorStatus(
+        "Scanning stopped. Open the monitoring page and press START SCANNING.",
+        "info"
+    );
+}
+
+function pauseMonitoringForHiddenTab() {
+
+    if (!monitoringActive) return;
+
+    stopStream(entryStream);
+    stopStream(exitStream);
+
+    entryStream = null;
+    exitStream = null;
+
+    document.getElementById("entryVideo").srcObject = null;
+    document.getElementById("exitVideo").srcObject = null;
+
+    if (monitoringLoop) {
+        cancelAnimationFrame(monitoringLoop);
+        monitoringLoop = null;
+    }
+
+    setRoleStatus("entry", "PAUSED", "amber");
+    setRoleStatus("exit", "PAUSED", "amber");
+
+    setMonitorStatus(
+        "SCANNING PAUSED: this browser tab is not active. Return to the tab to resume.",
+        "error"
+    );
+}
+
+async function resumeMonitoringAfterVisible() {
+
+    if (!monitoringActive) return;
+
+    try {
+
+        entryStream =
+            await openCamera(
+                entryDeviceId,
+                "entryVideo"
+            );
+
+        const mode =
+            document.getElementById(
+                "cameraMode"
+            ).value;
+
+        if (mode === "dual") {
+
+            exitStream =
+                await openCamera(
+                    exitDeviceId,
+                    "exitVideo"
+                );
+        }
+
+        setRoleStatus("entry", "LIVE", "green");
+
+        setRoleStatus(
+            "exit",
+            mode === "dual"
+                ? "LIVE"
+                : "STANDBY",
+            mode === "dual"
+                ? "green"
+                : "amber"
+        );
+
+        setMonitorStatus(
+            mode === "dual"
+                ? "LIVE SCANNING ACTIVE: Entry and Exit cameras are monitoring."
+                : "LIVE SCANNING ACTIVE: Single-camera mode.",
+            "success"
+        );
+
+        beginMonitoringLoop();
+
+    } catch (error) {
+
+        console.error(error);
+
+        setMonitorStatus(
+            "Could not resume camera: " + error.message,
+            "error"
+        );
+    }
+}
+
+function beginMonitoringLoop() {
+
+    if (!monitoringActive || document.hidden) return;
+
+    if (monitoringLoop) {
+        cancelAnimationFrame(monitoringLoop);
+    }
+
+    const loop = async () => {
+
+        if (!monitoringActive || document.hidden) return;
+
+        const mode =
+            document.getElementById(
+                "cameraMode"
+            ).value;
+
+        if (mode === "single") {
+
+            const singleBusy =
+                cameraScanBusy[singleCameraRole];
+
+            if (!singleBusy) {
+                await scanVideo(
+                    singleCameraRole,
+                    document.getElementById("entryVideo")
+                );
+            }
+
+        } else {
+
+            if (!cameraScanBusy.entry) {
+                await scanVideo(
+                    "entry",
+                    document.getElementById("entryVideo")
+                );
+            }
+
+            if (!cameraScanBusy.exit) {
+                await scanVideo(
+                    "exit",
+                    document.getElementById("exitVideo")
+                );
+            }
+        }
+
+        if (monitoringActive && !document.hidden) {
+            monitoringLoop =
+                requestAnimationFrame(loop);
+        }
+    };
+
+    monitoringLoop =
+        requestAnimationFrame(loop);
+}
+
+async function scanVideo(role, video) {
+
+    if (!video || video.readyState < 3) return;
+
+    cameraScanBusy[role] = true;
+
+    try {
+
+        const result =
+            await faceapi
+            .detectSingleFace(
+                video,
+                new faceapi.TinyFaceDetectorOptions({
+                    inputSize: 320,
+                    scoreThreshold: 0.55
+                })
+            )
+            .withFaceLandmarks()
+            .withFaceDescriptor();
+
+        if (!result) {
+
+            updateDetectionText(
+                role,
+                "No face detected"
+            );
+
+            return;
+        }
+
+        updateDetectionText(
+            role,
+            "Face detected. Verifying..."
+        );
+
+        const student =
+            await matchRegisteredStudent(
+                result.descriptor
+            );
+
+        if (!student) {
+
+            updateDetectionText(
+                role,
+                "Unknown / unregistered face"
+            );
+
+            return;
+        }
+
+        updateDetectionText(
+            role,
+            "Verified: " + student.name
+        );
+
+        await processAttendanceEvent(
+            role,
+            student
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Face scan " + role,
+            error
+        );
+
+    } finally {
+
+        cameraScanBusy[role] = false;
+    }
+}
+
+async function matchRegisteredStudent(descriptor) {
+
+    if (!monitoringClassId) return null;
+
+    const snapshot =
+        await get(
+            ref(
+                db,
+                "classes/" +
+                monitoringClassId +
+                "/students"
+            )
+        );
+
+    if (!snapshot.exists()) return null;
+
+    const students =
+        snapshot.val();
+
+    let bestStudent = null;
+    let bestDistance = Infinity;
+
+    for (
+        const [studentId, student]
+        of Object.entries(students)
+    ) {
+
+        const descriptors = [];
+
+        if (Array.isArray(student.faceDescriptor1)) {
+            descriptors.push(
+                new Float32Array(
+                    student.faceDescriptor1
+                )
+            );
+        }
+
+        if (Array.isArray(student.faceDescriptor2)) {
+            descriptors.push(
+                new Float32Array(
+                    student.faceDescriptor2
+                )
+            );
+        }
+
+        if (!descriptors.length) continue;
+
+        for (const known of descriptors) {
+
+            const distance =
+                faceapi.euclideanDistance(
+                    descriptor,
+                    known
+                );
+
+            if (distance < bestDistance) {
+
+                bestDistance = distance;
+
+                bestStudent = {
+                    id: studentId,
+                    ...student,
+                    distance
+                };
+            }
+        }
+    }
+
+    // Conservative threshold to reduce false matches.
+    if (
+        !bestStudent ||
+        bestDistance > 0.48
+    ) {
+        return null;
+    }
+
+    return bestStudent;
+}
+
+async function processAttendanceEvent(
+    role,
+    student
+) {
+
+    const key =
+        monitoringClassId +
+        "_" +
+        student.id;
+
+    const now =
+        Date.now();
+
+    // Prevent repeated recognition from generating duplicate events.
+    if (
+        lastEventTime[key] &&
+        now - lastEventTime[key] < 15000
+    ) {
+        return;
+    }
+
+    const studentRef =
+        ref(
+            db,
+            "attendance/" +
+            monitoringClassId +
+            "/" +
+            monitoringDate +
+            "/" +
+            student.id
+        );
+
+    const snapshot =
+        await get(studentRef);
+
+    let record =
+        snapshot.exists()
+            ? snapshot.val()
+            : {};
+
+    let sessions =
+        record.sessions || {};
+
+    const sessionEntries =
+        Object.entries(sessions);
+
+    let openSessionId = null;
+
+    for (
+        const [sessionId, session]
+        of sessionEntries
+    ) {
+
+        if (
+            session &&
+            session.in &&
+            !session.out
+        ) {
+            openSessionId = sessionId;
+        }
+    }
+
+    if (role === "entry") {
+
+        // Ignore an ENTRY if the student is already inside.
+        if (openSessionId) {
+
+            showLiveEvent(
+                student,
+                "IN",
+                "Already inside",
+                role
+            );
+
+            return;
+        }
+
+        const sessionRef =
+            push(
+                ref(
+                    db,
+                    "attendance/" +
+                    monitoringClassId +
+                    "/" +
+                    monitoringDate +
+                    "/" +
+                    student.id +
+                    "/sessions"
+                )
+            );
+
+        await set(
+            sessionRef,
+            {
+                in: new Date(now).toISOString(),
+                out: null,
+                inSource: "WEBCAM",
+                inCameraRole: "ENTRY",
+                inVerified: true,
+                inFaceDistance:
+                    Number(
+                        student.distance
+                            .toFixed(4)
+                    )
+            }
+        );
+
+        lastEventTime[key] = now;
+
+        showLiveEvent(
+            student,
+            "IN",
+            "Attendance recorded",
+            role
+        );
+
+        setMonitorStatus(
+            student.name +
+            " entered at " +
+            formatTime(new Date(now)),
+            "success"
+        );
+
+        updateDashboard();
+
+        // In single-camera mode, automatically change to EXIT
+        // only after a valid ENTRY transaction.
+        if (
+            document.getElementById(
+                "cameraMode"
+            ).value === "single"
+        ) {
+            singleCameraRole = "exit";
+
+            setMonitorStatus(
+                "ENTRY completed for " +
+                student.name +
+                ". Single camera is now in EXIT mode.",
+                "success"
+            );
+
+            updateSingleRoleButton();
+        }
+
+        return;
+    }
+
+    // EXIT
+    if (role === "exit") {
+
+        // Ignore EXIT if there is no open IN session.
+        if (!openSessionId) {
+
+            showLiveEvent(
+                student,
+                "OUT",
+                "Ignored: no open IN session",
+                role
+            );
+
+            return;
+        }
+
+        await update(
+            ref(
+                db,
+                "attendance/" +
+                monitoringClassId +
+                "/" +
+                monitoringDate +
+                "/" +
+                student.id +
+                "/sessions/" +
+                openSessionId
+            ),
+            {
+                out: new Date(now).toISOString(),
+                outSource: "WEBCAM",
+                outCameraRole: "EXIT",
+                outVerified: true,
+                outFaceDistance:
+                    Number(
+                        student.distance
+                            .toFixed(4)
+                    )
+            }
+        );
+
+        lastEventTime[key] = now;
+
+        showLiveEvent(
+            student,
+            "OUT",
+            "Attendance recorded",
+            role
+        );
+
+        setMonitorStatus(
+            student.name +
+            " exited at " +
+            formatTime(new Date(now)),
+            "success"
+        );
+
+        updateDashboard();
+
+        // In single-camera mode, switch back to ENTRY.
+        if (
+            document.getElementById(
+                "cameraMode"
+            ).value === "single"
+        ) {
+
+            singleCameraRole = "entry";
+
+            setMonitorStatus(
+                "EXIT completed for " +
+                student.name +
+                ". Single camera is now in ENTRY mode.",
+                "success"
+            );
+
+            updateSingleRoleButton();
+        }
+    }
+}
+
+function updateDetectionText(role, text) {
+
+    const id =
+        role === "entry"
+            ? "entryDetectionText"
+            : "exitDetectionText";
+
+    const overlayId =
+        role === "entry"
+            ? "entryOverlay"
+            : "exitOverlay";
+
+    const el =
+        document.getElementById(id);
+
+    const overlay =
+        document.getElementById(overlayId);
+
+    if (el) el.textContent = text;
+    if (overlay) overlay.textContent = text;
+}
+
+function showLiveEvent(
+    student,
+    type,
+    result,
+    role
+) {
+
+    const container =
+        document.getElementById("liveEvents");
+
+    if (!container) return;
+
+    if (
+        container.children.length === 1 &&
+        container.children[0].textContent.includes(
+            "No events yet"
+        )
+    ) {
+        container.innerHTML = "";
+    }
+
+    const row =
+        document.createElement("div");
+
+    row.className = "event-row";
+
+    const time =
+        formatTime(new Date());
+
+    row.innerHTML = `
+        <div>${time}</div>
+        <div>
+            <strong>${escapeHtml(student.name || "")}</strong><br>
+            <small>${escapeHtml(student.enrollmentNo || "")}</small>
+        </div>
+        <div class="${type === "IN" ? "event-in" : "event-out"}">
+            ${type}
+        </div>
+        <div>${escapeHtml(result)}</div>
+    `;
+
+    container.prepend(row);
+
+    while (container.children.length > 30) {
+        container.removeChild(
+            container.lastElementChild
+        );
+    }
+}
+
+function updateSingleRoleButton() {
+
+    const button =
+        document.getElementById(
+            "switchSingleRole"
+        );
+
+    if (!button) return;
+
+    if (
+        singleCameraRole === "entry"
+    ) {
+        button.textContent =
+            "SINGLE CAMERA: ENTRY MODE";
+    } else {
+        button.textContent =
+            "SINGLE CAMERA: EXIT MODE";
+    }
+
+    document.getElementById(
+        "entryCameraPanel"
+    ).classList.toggle(
+        "active-entry",
+        singleCameraRole === "entry"
+    );
+
+    document.getElementById(
+        "exitCameraPanel"
+    ).classList.toggle(
+        "active-exit",
+        singleCameraRole === "exit"
+    );
+}
+
+document
+.getElementById("startMonitoring")
+.addEventListener(
+    "click",
+    startMonitoring
+);
+
+document
+.getElementById("stopMonitoring")
+.addEventListener(
+    "click",
+    stopMonitoring
+);
+
+document
+.getElementById("refreshCameras")
+.addEventListener(
+    "click",
+    enumerateCameras
+);
+
+document
+.getElementById("entryCameraSelect")
+.addEventListener(
+    "change",
+    event => {
+        entryDeviceId = event.target.value;
+        updateCameraLabels();
+    }
+);
+
+document
+.getElementById("exitCameraSelect")
+.addEventListener(
+    "change",
+    event => {
+        exitDeviceId = event.target.value;
+        updateCameraLabels();
+    }
+);
+
+document
+.getElementById("cameraMode")
+.addEventListener(
+    "change",
+    event => {
+
+        if (event.target.value === "single") {
+
+            setMonitorStatus(
+                "Single-camera mode: one webcam can be used for ENTRY and then EXIT.",
+                "info"
+            );
+
+        } else {
+
+            setMonitorStatus(
+                "Two-camera mode: separate ENTRY and EXIT webcams are active.",
+                "info"
+            );
+        }
+    }
+);
+
+document
+.getElementById("switchSingleRole")
+.addEventListener(
+    "click",
+    () => {
+
+        if (
+            document.getElementById(
+                "cameraMode"
+            ).value !== "single"
+        ) {
+
+            alert(
+                "Select Single Camera Mode first."
+            );
+
+            return;
+        }
+
+        singleCameraRole =
+            singleCameraRole === "entry"
+                ? "exit"
+                : "entry";
+
+        updateSingleRoleButton();
+
+        setMonitorStatus(
+            "Single camera manually changed to " +
+            singleCameraRole.toUpperCase() +
+            " mode.",
+            "info"
+        );
+    }
+);
+
+document.addEventListener(
+    "visibilitychange",
+    async () => {
+
+        const dot =
+            document.getElementById(
+                "tabStatusDot"
+            );
+
+        const textEl =
+            document.getElementById(
+                "tabStatusText"
+            );
+
+        if (document.hidden) {
+
+            if (dot) dot.className = "dot amber";
+            if (textEl) textEl.textContent = "PAUSED";
+
+            pauseMonitoringForHiddenTab();
+
+        } else {
+
+            if (dot) dot.className = "dot green";
+            if (textEl) textEl.textContent = "ACTIVE";
+
+            if (monitoringActive) {
+                await resumeMonitoringAfterVisible();
+            }
+        }
+    }
+);
+
+window.addEventListener(
+    "beforeunload",
+    () => {
+        stopStream(entryStream);
+        stopStream(exitStream);
+    }
+);
+
+// Start camera discovery when the application becomes available.
+enumerateCameras();
+updateSingleRoleButton();
 
 
 /* =========================================================
@@ -2058,6 +3692,8 @@ async function loadAllData() {
 
     await loadClasses();
 
+    restoreMonitoringConfiguration();
+
     await loadStudents();
 
     updateDashboard();
@@ -2111,6 +3747,14 @@ async function loadClasses() {
 
         reportClass.innerHTML =
             '<option value="">Select Class</option>';
+
+        const monitorClass =
+            document.getElementById("monitorClassSelect");
+
+        if (monitorClass) {
+            monitorClass.innerHTML =
+                '<option value="">Select Class</option>';
+        }
 
 
         if (
@@ -2197,6 +3841,15 @@ async function loadClasses() {
                 reportClass.appendChild(
                     option.cloneNode(true)
                 );
+
+                const monitorClass =
+                    document.getElementById("monitorClassSelect");
+
+                if (monitorClass) {
+                    monitorClass.appendChild(
+                        option.cloneNode(true)
+                    );
+                }
 
             }
         );
@@ -2311,6 +3964,11 @@ document
         registrationCurrent =
             1;
 
+        // Registration camera and live attendance camera must not
+        // compete for the same webcam.
+        if (monitoringActive) {
+            stopMonitoring();
+        }
 
         document
         .getElementById(
@@ -2322,6 +3980,12 @@ document
 
         updateRegistrationCounter();
 
+        const modelsReady =
+            await loadFaceModels();
+
+        if (!modelsReady) {
+            return;
+        }
 
         await startCamera();
 
@@ -2534,6 +4198,27 @@ document
 
         try {
 
+            if (!faceModelsLoaded) {
+                const ready = await loadFaceModels();
+                if (!ready) {
+                    throw new Error(
+                        "Face recognition models are not available."
+                    );
+                }
+            }
+
+            const descriptor1 =
+                await descriptorFromDataUrl(photo1Data);
+
+            const descriptor2 =
+                await descriptorFromDataUrl(photo2Data);
+
+            if (!descriptor1 || !descriptor2) {
+                throw new Error(
+                    "A clear face was not detected in both registration photos. Retake the photos."
+                );
+            }
+
             const studentRef =
                 push(
                     ref(
@@ -2563,6 +4248,12 @@ document
 
                     photo2:
                         photo2Data,
+
+                    faceDescriptor1:
+                        Array.from(descriptor1),
+
+                    faceDescriptor2:
+                        Array.from(descriptor2),
 
                     createdAt:
                         new Date().toISOString()
@@ -2639,6 +4330,29 @@ document
     }
 );
 
+
+
+async function descriptorFromDataUrl(dataUrl) {
+
+    const image =
+        await faceapi.fetchImage(dataUrl);
+
+    const result =
+        await faceapi
+        .detectSingleFace(
+            image,
+            new faceapi.TinyFaceDetectorOptions({
+                inputSize: 320,
+                scoreThreshold: 0.55
+            })
+        )
+        .withFaceLandmarks()
+        .withFaceDescriptor();
+
+    return result
+        ? result.descriptor
+        : null;
+}
 
 /* =========================================================
    CLEAR STUDENT FORM
