@@ -651,19 +651,6 @@ th {
 
 <style>
 .face-box-canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:3;}
-.registration-video-wrap{position:relative;background:#020617;border-radius:7px;overflow:hidden;}
-.registration-video-wrap video{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;}
-.registration-face-canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2;}
-.registration-status{margin-top:10px;padding:10px;border-radius:8px;background:#eff6ff;color:#1e40af;font-size:13px;font-weight:600;}
-.registration-status.success{background:#dcfce7;color:#166534;}
-.registration-status.error{background:#fee2e2;color:#991b1b;}
-.registration-status.warning{background:#fef3c7;color:#92400e;}
-.registration-preview-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.registration-preview-box{position:relative;}
-.registration-preview-box img{width:100%;aspect-ratio:4/3;object-fit:cover;background:#e2e8f0;border-radius:7px;}
-.registration-score{margin-top:10px;padding:10px;border-radius:8px;background:#f8fafc;border:1px solid #e2e8f0;font-size:13px;}
-@media(max-width:650px){.registration-preview-row{grid-template-columns:1fr;}}
-
 .monitor-video-wrap{overflow:hidden;}
 </style>
 </style>
@@ -1480,60 +1467,51 @@ th {
 
                         <div class="camera-panel">
 
-                            <h4>LIVE FACE REGISTRATION</h4>
+                            <h4>
+                                Photo 1
+                            </h4>
 
-                            <div class="registration-video-wrap">
-                                <video
-                                    id="cameraVideo"
-                                    autoplay
-                                    muted
-                                    playsinline
-                                ></video>
-                                <canvas
-                                    id="registrationFaceCanvas"
-                                    class="registration-face-canvas"
-                                ></canvas>
-                            </div>
+                            <video
+                                id="cameraVideo"
+                                autoplay
+                                playsinline
+                            ></video>
 
-                            <div id="registrationFaceStatus" class="registration-status">
-                                Starting face recognition...
-                            </div>
-
-                            <div class="form-actions" style="margin-top:10px;">
-                                <button class="btn btn-primary" id="capturePhoto1">CAPTURE PHOTO 1</button>
-                                <button class="btn btn-primary" id="capturePhoto2">CAPTURE PHOTO 2</button>
-                            </div>
-
-                            <small style="display:block;margin-top:8px;color:#64748b;">
-                                Automatic capture is active. Manual buttons remain available.
-                            </small>
+                            <button
+                                class="btn btn-primary"
+                                id="capturePhoto1"
+                                style="margin-top:10px;"
+                            >
+                                CAPTURE PHOTO 1
+                            </button>
 
                         </div>
 
+
                         <div class="camera-panel">
 
-                            <h4>CAPTURED FACE VECTORS</h4>
+                            <h4>
+                                Photo 2
+                            </h4>
 
-                            <canvas id="photoCanvas" style="display:none;"></canvas>
+                            <canvas
+                                id="photoCanvas"
+                                style="display:none;"
+                            ></canvas>
 
-                            <div class="registration-preview-row">
-                                <div class="registration-preview-box">
-                                    <small>PHOTO 1</small>
-                                    <img id="photo1Preview" class="photo-preview" alt="Photo 1 preview">
-                                </div>
-                                <div class="registration-preview-box">
-                                    <small>PHOTO 2</small>
-                                    <img id="photoPreview" class="photo-preview" alt="Photo 2 preview">
-                                </div>
-                            </div>
+                            <img
+                                id="photoPreview"
+                                class="photo-preview"
+                                alt="Photo preview"
+                            >
 
-                            <div id="registrationVectorStatus" class="registration-score">
-                                Vector 1: waiting<br>Vector 2: waiting
-                            </div>
-
-                            <div id="registrationMatchScore" class="registration-score">
-                                Face-vector match: waiting
-                            </div>
+                            <button
+                                class="btn btn-primary"
+                                id="capturePhoto2"
+                                style="margin-top:10px;"
+                            >
+                                CAPTURE PHOTO 2
+                            </button>
 
                         </div>
 
@@ -1901,18 +1879,6 @@ let photo1Data = null;
 let photo2Data = null;
 
 let cameraStream = null;
-
-// Registration face-recognition state
-let registrationFaceLoop = null;
-let registrationScanBusy = false;
-let registrationDescriptor1 = null;
-let registrationDescriptor2 = null;
-let registrationLastCapture = 0;
-let registrationCaptureStage = 1;
-let registrationStableFrames = 0;
-const REGISTRATION_STABLE_REQUIRED = 3;
-const REGISTRATION_CAPTURE_GAP = 1200;
-
 
 
 /* =========================================================
@@ -2960,7 +2926,7 @@ function clearFaceBox(role) {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 }
 
-function drawFaceBox(role, detection, matched = false, score = null) {
+function drawFaceBox(role, detection, matched = false) {
     const video = document.getElementById(role + "Video");
     const canvas = document.getElementById(role + "FaceCanvas");
     if (!video || !canvas || !detection) return;
@@ -2989,9 +2955,7 @@ function drawFaceBox(role, detection, matched = false, score = null) {
 
     if (matched) {
         ctx.fillStyle = "rgba(22,163,74,.92)";
-        const label = score !== null
-            ? "✓ VERIFIED " + Number(score).toFixed(1) + "%"
-            : "✓ VERIFIED";
+        const label = "✓ VERIFIED";
         ctx.font = "700 14px Arial";
         const pad = 8;
         const h = 28;
@@ -3062,11 +3026,8 @@ async function scanVideo(role, video) {
             return;
         }
 
-        drawFaceBox(role, result, true, student.similarity);
-        updateDetectionText(
-            role,
-            "✓ " + student.name + " | MATCH " + student.similarity.toFixed(1) + "%"
-        );
+        drawFaceBox(role, result, true);
+        updateDetectionText(role, "✓ Verified: " + student.name);
 
         await processAttendanceEvent(role, student);
 
@@ -3078,35 +3039,46 @@ async function scanVideo(role, video) {
 }
 
 async function matchRegisteredStudent(descriptor) {
+
     if (!monitoringClassId) return null;
+
+    // Always load the registered reference templates for the selected
+    // class. These are created only during student registration.
     await loadRegisteredFaces();
+
     if (!registeredFaceCache.length) return null;
 
     let bestStudent = null;
     let bestDistance = Infinity;
 
     for (const student of registeredFaceCache) {
-        for (const known of student.descriptors) {
-            const distance = faceapi.euclideanDistance(descriptor, known);
+
+        // IMPORTANT: attendance compares ONLY against the student's
+        // saved registration references. The current webcam frame is
+        // never saved or promoted to a reference.
+        for (const referenceDescriptor of student.descriptors) {
+
+            const distance =
+                faceapi.euclideanDistance(
+                    descriptor,
+                    referenceDescriptor
+                );
+
             if (distance < bestDistance) {
                 bestDistance = distance;
-                bestStudent = { ...student, distance };
+                bestStudent = {
+                    ...student,
+                    distance
+                };
             }
         }
     }
 
-    if (!bestStudent) return null;
-
-    const similarity = Math.max(
-        0,
-        Math.min(100, (1 - bestDistance) * 100)
-    );
-
-    // Attendance is allowed only at 80% or above.
-    if (similarity < 80) return null;
-
-    bestStudent.similarity = similarity;
-    bestStudent.liveDescriptor = descriptor;
+    // Reject the live face if it is not sufficiently close to ANY
+    // registered reference photo.
+    if (!bestStudent || bestDistance > 0.50) {
+        return null;
+    }
 
     return bestStudent;
 }
@@ -3123,44 +3095,6 @@ async function processAttendanceEvent(
 
     const now =
         Date.now();
-
-    // 80% to below 90%: accepted match and refresh the stored
-    // face model with the current verified live vector.
-    if (
-        student.similarity >= 80 &&
-        student.similarity < 90 &&
-        student.liveDescriptor
-    ) {
-        try {
-            const descriptorKey =
-                student.descriptorSource === "faceDescriptor2"
-                    ? "faceDescriptor2"
-                    : "faceDescriptor1";
-
-            await update(
-                ref(
-                    db,
-                    "classes/" +
-                    monitoringClassId +
-                    "/students/" +
-                    student.id
-                ),
-                {
-                    [descriptorKey]:
-                        Array.from(student.liveDescriptor),
-                    lastFaceVectorUpdate:
-                        new Date(now).toISOString(),
-                    lastFaceMatch:
-                        Number(student.similarity.toFixed(2))
-                }
-            );
-
-            // Refresh the local cache after updating Firebase.
-            registeredFaceCacheClassId = "";
-        } catch (vectorUpdateError) {
-            console.error("Face vector update failed:", vectorUpdateError);
-        }
-    }
 
     // Prevent repeated recognition from generating duplicate events.
     if (
@@ -3252,11 +3186,6 @@ async function processAttendanceEvent(
                     Number(
                         student.distance
                             .toFixed(4)
-                    ),
-                inMatchPercent:
-                    Number(
-                        student.similarity
-                            .toFixed(2)
                     )
             }
         );
@@ -3338,11 +3267,6 @@ async function processAttendanceEvent(
                     Number(
                         student.distance
                             .toFixed(4)
-                    ),
-                outMatchPercent:
-                    Number(
-                        student.similarity
-                            .toFixed(2)
                     )
             }
         );
@@ -3995,7 +3919,7 @@ async function(id) {
 
 
 /* =========================================================
-   STUDENT REGISTRATION START + LIVE FACE RECOGNITION
+   STUDENT REGISTRATION START
 ========================================================= */
 
 document
@@ -4009,6 +3933,7 @@ document
             .getElementById("studentClassSelect")
             .value;
 
+
         registrationTotal =
             Number(
                 document
@@ -4016,493 +3941,439 @@ document
                 .value
             );
 
-        if (!selectedClassId) {
-            alert("Select a classroom.");
+
+        if (
+            !selectedClassId
+        ) {
+
+            alert(
+                "Select a classroom."
+            );
+
             return;
         }
 
-        if (!registrationTotal || registrationTotal < 1) {
-            alert("Enter the number of students.");
+
+        if (
+            !registrationTotal ||
+            registrationTotal < 1
+        ) {
+
+            alert(
+                "Enter the number of students."
+            );
+
             return;
         }
 
-        registrationCurrent = 1;
 
+        registrationCurrent =
+            1;
+
+        // Registration camera and live attendance camera must not
+        // compete for the same webcam.
         if (monitoringActive) {
             stopMonitoring();
         }
 
         document
-        .getElementById("studentRegistrationCard")
-        .style.display = "block";
+        .getElementById(
+            "studentRegistrationCard"
+        )
+        .style.display =
+            "block";
+
 
         updateRegistrationCounter();
 
-        const modelsReady = await loadFaceModels();
-        if (!modelsReady) return;
+        const modelsReady =
+            await loadFaceModels();
+
+        if (!modelsReady) {
+            return;
+        }
 
         await startCamera();
+
     }
 );
 
 
 /* =========================================================
-   REGISTRATION CAMERA
+   CAMERA
 ========================================================= */
 
 async function startCamera() {
 
     try {
 
-        stopRegistrationFaceLoop();
-
-        if (cameraStream) {
-            cameraStream.getTracks().forEach(track => track.stop());
-            cameraStream = null;
-        }
-
         cameraStream =
-            await navigator.mediaDevices.getUserMedia({
+            await navigator
+            .mediaDevices
+            .getUserMedia({
                 video: {
-                    facingMode: "user",
-                    width: { ideal: 1280 },
-                    height: { ideal: 720 },
-                    frameRate: { ideal: 20, max: 30 }
+                    facingMode: "user"
                 },
                 audio: false
             });
 
-        const video = document.getElementById("cameraVideo");
-        video.srcObject = cameraStream;
-        await video.play();
 
-        resetRegistrationCaptureState();
-        startRegistrationFaceLoop();
+        document
+        .getElementById("cameraVideo")
+        .srcObject =
+            cameraStream;
+
 
     } catch(error) {
 
-        setRegistrationStatus(
-            "Camera access failed: " + error.message,
-            "error"
+        alert(
+            "Camera access failed: " +
+            error.message
         );
 
     }
-}
 
-
-function setRegistrationStatus(text, type = "info") {
-
-    const el = document.getElementById("registrationFaceStatus");
-    if (!el) return;
-
-    el.textContent = text;
-    el.className = "registration-status" +
-        (type === "success" ? " success" :
-         type === "error" ? " error" :
-         type === "warning" ? " warning" : "");
-}
-
-
-function resetRegistrationCaptureState() {
-
-    registrationDescriptor1 = null;
-    registrationDescriptor2 = null;
-    registrationCaptureStage = 1;
-    registrationStableFrames = 0;
-    registrationLastCapture = 0;
-
-    const p1 = document.getElementById("photo1Preview");
-    const p2 = document.getElementById("photoPreview");
-
-    if (p1) p1.removeAttribute("src");
-    if (p2) p2.removeAttribute("src");
-
-    photo1Data = null;
-    photo2Data = null;
-
-    updateRegistrationVectorStatus();
-    clearRegistrationFaceBox();
-}
-
-
-function stopRegistrationFaceLoop() {
-
-    if (registrationFaceLoop) {
-        clearTimeout(registrationFaceLoop);
-        registrationFaceLoop = null;
-    }
-}
-
-
-function startRegistrationFaceLoop() {
-
-    stopRegistrationFaceLoop();
-
-    const loop = async () => {
-
-        if (!cameraStream) return;
-
-        const video = document.getElementById("cameraVideo");
-
-        if (
-            video &&
-            video.readyState >= 3 &&
-            !registrationScanBusy
-        ) {
-            await scanRegistrationFace(video);
-        }
-
-        if (cameraStream) {
-            registrationFaceLoop = setTimeout(loop, 120);
-        }
-    };
-
-    loop();
-}
-
-
-async function scanRegistrationFace(video) {
-
-    registrationScanBusy = true;
-
-    try {
-
-        const result = await faceapi
-            .detectSingleFace(
-                video,
-                new faceapi.TinyFaceDetectorOptions({
-                    inputSize: 320,
-                    scoreThreshold: 0.45
-                })
-            )
-            .withFaceLandmarks()
-            .withFaceDescriptor();
-
-        if (!result) {
-            registrationStableFrames = 0;
-            clearRegistrationFaceBox();
-            setRegistrationStatus(
-                "No face detected. Look directly at the camera.",
-                "warning"
-            );
-            return;
-        }
-
-        drawRegistrationFaceBox(result);
-
-        const confidence =
-            Math.round((result.detection.score || 0) * 100);
-
-        if (confidence < 50) {
-            registrationStableFrames = 0;
-            setRegistrationStatus(
-                "Face detected, but move closer / improve lighting. " + confidence + "%",
-                "warning"
-            );
-            return;
-        }
-
-        registrationStableFrames++;
-
-        if (registrationCaptureStage === 1) {
-
-            setRegistrationStatus(
-                "Face ready. Automatically capturing Photo 1... " +
-                Math.min(100, registrationStableFrames * 34) + "%",
-                "success"
-            );
-
-            if (
-                registrationStableFrames >= REGISTRATION_STABLE_REQUIRED &&
-                Date.now() - registrationLastCapture >= REGISTRATION_CAPTURE_GAP
-            ) {
-                await captureRegistrationPhoto(1);
-            }
-
-            return;
-        }
-
-        if (registrationCaptureStage === 2) {
-
-            setRegistrationStatus(
-                "Photo 1 vector created. Hold a slightly different angle for Photo 2...",
-                "success"
-            );
-
-            if (
-                registrationStableFrames >= REGISTRATION_STABLE_REQUIRED &&
-                Date.now() - registrationLastCapture >= REGISTRATION_CAPTURE_GAP
-            ) {
-                await captureRegistrationPhoto(2);
-            }
-
-            return;
-        }
-
-        if (registrationDescriptor1 && registrationDescriptor2) {
-            const score = descriptorSimilarity(
-                registrationDescriptor1,
-                registrationDescriptor2
-            );
-
-            setRegistrationStatus(
-                "Registration complete. Both face vectors are ready. Match: " +
-                score.toFixed(1) + "%",
-                "success"
-            );
-        }
-
-    } catch(error) {
-        console.error("Registration face scan:", error);
-        setRegistrationStatus(
-            "Face recognition error. Keep your face visible and try again.",
-            "error"
-        );
-    } finally {
-        registrationScanBusy = false;
-    }
-}
-
-
-async function captureRegistrationPhoto(number) {
-
-    const video = document.getElementById("cameraVideo");
-    const canvas = document.getElementById("photoCanvas");
-
-    if (!video || !canvas || !video.videoWidth) return;
-
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-
-    canvas.getContext("2d").drawImage(
-        video,
-        0,
-        0,
-        canvas.width,
-        canvas.height
-    );
-
-    const data = canvas.toDataURL("image/jpeg", 0.88);
-
-    const descriptor = await descriptorFromDataUrl(data);
-
-    if (!descriptor) {
-        registrationStableFrames = 0;
-        setRegistrationStatus(
-            "Face was lost while capturing. Retrying automatically...",
-            "warning"
-        );
-        return;
-    }
-
-    registrationLastCapture = Date.now();
-    registrationStableFrames = 0;
-
-    if (number === 1) {
-
-        photo1Data = data;
-        registrationDescriptor1 = descriptor;
-        registrationCaptureStage = 2;
-
-        const preview = document.getElementById("photo1Preview");
-        if (preview) preview.src = data;
-
-        setRegistrationStatus(
-            "✓ Photo 1 captured + face vector created instantly. Now preparing Photo 2...",
-            "success"
-        );
-
-    } else {
-
-        photo2Data = data;
-        registrationDescriptor2 = descriptor;
-        registrationCaptureStage = 3;
-
-        const preview = document.getElementById("photoPreview");
-        if (preview) preview.src = data;
-
-        const score = descriptorSimilarity(
-            registrationDescriptor1,
-            registrationDescriptor2
-        );
-
-        updateRegistrationVectorStatus();
-
-        setRegistrationStatus(
-            "✓ Photo 2 captured + face vector created instantly. Vector match: " +
-            score.toFixed(1) + "%",
-            "success"
-        );
-    }
-
-    updateRegistrationVectorStatus();
 }
 
 
 /* =========================================================
-   MANUAL CAPTURE FALLBACK
+   PHOTO 1
 ========================================================= */
 
 document
 .getElementById("capturePhoto1")
-.addEventListener("click", async () => {
-    await captureRegistrationPhoto(1);
-});
+.addEventListener(
+    "click",
+    () => {
 
+        const video =
+            document
+            .getElementById("cameraVideo");
+
+        const canvas =
+            document
+            .getElementById("photoCanvas");
+
+
+        canvas.width =
+            video.videoWidth;
+
+        canvas.height =
+            video.videoHeight;
+
+
+        canvas
+        .getContext("2d")
+        .drawImage(
+            video,
+            0,
+            0,
+            canvas.width,
+            canvas.height
+        );
+
+
+        photo1Data =
+            canvas.toDataURL(
+                "image/jpeg",
+                0.85
+            );
+
+
+        alert(
+            "Photo 1 captured."
+        );
+
+    }
+);
+
+
+/* =========================================================
+   PHOTO 2
+========================================================= */
 
 document
 .getElementById("capturePhoto2")
-.addEventListener("click", async () => {
-    if (!registrationDescriptor1) {
-        setRegistrationStatus(
-            "Capture Photo 1 first.",
-            "warning"
+.addEventListener(
+    "click",
+    () => {
+
+        const video =
+            document
+            .getElementById("cameraVideo");
+
+        const canvas =
+            document
+            .getElementById("photoCanvas");
+
+
+        canvas.width =
+            video.videoWidth;
+
+        canvas.height =
+            video.videoHeight;
+
+
+        canvas
+        .getContext("2d")
+        .drawImage(
+            video,
+            0,
+            0,
+            canvas.width,
+            canvas.height
         );
-        return;
+
+
+        photo2Data =
+            canvas.toDataURL(
+                "image/jpeg",
+                0.85
+            );
+
+
+        document
+        .getElementById("photoPreview")
+        .src =
+            photo2Data;
+
+
+        alert(
+            "Photo 2 captured."
+        );
+
     }
-    await captureRegistrationPhoto(2);
-});
+);
+
+
+/* =========================================================
+   SAVE STUDENT
+========================================================= */
+
+document
+.getElementById("saveStudent")
+.addEventListener(
+    "click",
+    async () => {
+
+        const enrollment =
+            document
+            .getElementById("studentEnrollment")
+            .value
+            .trim();
+
+        const roll =
+            document
+            .getElementById("studentRoll")
+            .value
+            .trim();
+
+        const name =
+            document
+            .getElementById("studentName")
+            .value
+            .trim();
+
+
+        if (
+            !enrollment ||
+            !roll ||
+            !name
+        ) {
+
+            alert(
+                "Enter enrollment number, roll number and name."
+            );
+
+            return;
+        }
+
+
+        if (
+            !photo1Data ||
+            !photo2Data
+        ) {
+
+            alert(
+                "Capture both photos."
+            );
+
+            return;
+        }
+
+
+        try {
+
+            if (!faceModelsLoaded) {
+                const ready = await loadFaceModels();
+                if (!ready) {
+                    throw new Error(
+                        "Face recognition models are not available."
+                    );
+                }
+            }
+
+            const descriptor1 =
+                await descriptorFromDataUrl(photo1Data);
+
+            const descriptor2 =
+                await descriptorFromDataUrl(photo2Data);
+
+            if (!descriptor1 || !descriptor2) {
+                throw new Error(
+                    "A clear face was not detected in both registration photos. Retake the photos."
+                );
+            }
+
+            const studentRef =
+                push(
+                    ref(
+                        db,
+                        "classes/" +
+                        selectedClassId +
+                        "/students"
+                    )
+                );
+
+
+            await set(
+                studentRef,
+                {
+
+                    enrollmentNo:
+                        enrollment,
+
+                    rollNo:
+                        roll,
+
+                    name:
+                        name,
+
+                    photo1:
+                        photo1Data,
+
+                    photo2:
+                        photo2Data,
+
+                    faceDescriptor1:
+                        Array.from(descriptor1),
+
+                    // These two descriptors are the permanent
+                    // attendance reference templates for this student.
+                    // Registration does NOT compare this student with
+                    // any other registered student.
+                    faceDescriptor2:
+                        Array.from(descriptor2),
+
+                    faceReferenceVersion:
+                        1,
+
+                    faceReferenceCount:
+                        2,
+
+                    createdAt:
+                        new Date().toISOString()
+
+                }
+            );
+
+
+            // Force attendance monitoring to reload the newly saved
+            // reference descriptors. Live attendance never uses a
+            // previous live face as a reference.
+            registeredFaceCache = [];
+            registeredFaceCacheClassId = "";
+
+            alert(
+                "Student saved successfully. Two photos are now stored as the permanent face references."
+            );
+
+
+            registrationCurrent++;
+
+
+            clearStudentForm();
+
+
+            if (
+                registrationCurrent >
+                registrationTotal
+            ) {
+
+                alert(
+                    "All students registered."
+                );
+
+
+                document
+                .getElementById(
+                    "studentRegistrationCard"
+                )
+                .style.display =
+                    "none";
+
+
+                if (
+                    cameraStream
+                ) {
+
+                    cameraStream
+                    .getTracks()
+                    .forEach(
+                        track =>
+                            track.stop()
+                    );
+
+                    cameraStream = null;
+                }
+
+
+            } else {
+
+                updateRegistrationCounter();
+
+            }
+
+
+            loadStudents();
+
+
+        } catch(error) {
+
+            console.error(error);
+
+            alert(
+                "Unable to save student: " +
+                error.message
+            );
+
+        }
+
+    }
+);
+
 
 
 async function descriptorFromDataUrl(dataUrl) {
 
-    const image = await faceapi.fetchImage(dataUrl);
+    const image =
+        await faceapi.fetchImage(dataUrl);
 
-    const result = await faceapi
+    const result =
+        await faceapi
         .detectSingleFace(
             image,
             new faceapi.TinyFaceDetectorOptions({
                 inputSize: 320,
-                scoreThreshold: 0.45
+                scoreThreshold: 0.55
             })
         )
         .withFaceLandmarks()
         .withFaceDescriptor();
 
-    return result ? result.descriptor : null;
-}
-
-
-function descriptorSimilarity(a, b) {
-
-    if (!a || !b) return 0;
-
-    const distance = faceapi.euclideanDistance(a, b);
-
-    // Normalized display score used consistently by this system.
-    return Math.max(
-        0,
-        Math.min(100, (1 - distance) * 100)
-    );
-}
-
-
-function drawRegistrationFaceBox(detection) {
-
-    const video = document.getElementById("cameraVideo");
-    const canvas = document.getElementById("registrationFaceCanvas");
-
-    if (!video || !canvas || !detection) return;
-
-    const rect = video.getBoundingClientRect();
-    const displaySize = {
-        width: rect.width,
-        height: rect.height
-    };
-
-    canvas.width = Math.max(1, Math.round(rect.width * devicePixelRatio));
-    canvas.height = Math.max(1, Math.round(rect.height * devicePixelRatio));
-
-    const ctx = canvas.getContext("2d");
-    ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
-    ctx.clearRect(0, 0, rect.width, rect.height);
-
-    const resized = faceapi.resizeResults(
-        detection,
-        displaySize
-    );
-
-    const box = resized.detection.box;
-
-    ctx.lineWidth = 4;
-    ctx.strokeStyle = "#22c55e";
-    ctx.shadowColor = "rgba(34,197,94,.7)";
-    ctx.shadowBlur = 10;
-    ctx.strokeRect(
-        box.x,
-        box.y,
-        box.width,
-        box.height
-    );
-    ctx.shadowBlur = 0;
-
-    ctx.fillStyle = "rgba(22,163,74,.92)";
-    ctx.font = "700 14px Arial";
-    const label = "FACE DETECTED";
-    const pad = 8;
-    const h = 28;
-    ctx.fillRect(
-        box.x,
-        Math.max(0, box.y - h),
-        ctx.measureText(label).width + pad * 2,
-        h
-    );
-    ctx.fillStyle = "#fff";
-    ctx.fillText(
-        label,
-        box.x + pad,
-        Math.max(18, box.y - 9)
-    );
-}
-
-
-function clearRegistrationFaceBox() {
-
-    const canvas =
-        document.getElementById("registrationFaceCanvas");
-
-    if (!canvas) return;
-
-    const ctx = canvas.getContext("2d");
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-}
-
-
-function updateRegistrationVectorStatus() {
-
-    const el =
-        document.getElementById("registrationVectorStatus");
-
-    if (!el) return;
-
-    const v1 = registrationDescriptor1
-        ? "READY (128 values)"
-        : "waiting";
-
-    const v2 = registrationDescriptor2
-        ? "READY (128 values)"
-        : "waiting";
-
-    el.innerHTML =
-        "Vector 1: " + v1 + "<br>" +
-        "Vector 2: " + v2;
-
-    const scoreEl =
-        document.getElementById("registrationMatchScore");
-
-    if (scoreEl) {
-        if (registrationDescriptor1 && registrationDescriptor2) {
-            const score = descriptorSimilarity(
-                registrationDescriptor1,
-                registrationDescriptor2
-            );
-            scoreEl.textContent =
-                "Face-vector match: " + score.toFixed(1) + "%";
-        } else {
-            scoreEl.textContent =
-                "Face-vector match: waiting";
-        }
-    }
+    return result
+        ? result.descriptor
+        : null;
 }
 
 /* =========================================================
@@ -4530,15 +4401,6 @@ function clearStudentForm() {
     photo1Data = null;
 
     photo2Data = null;
-
-    registrationDescriptor1 = null;
-    registrationDescriptor2 = null;
-    registrationCaptureStage = 1;
-    registrationStableFrames = 0;
-    registrationLastCapture = 0;
-
-    updateRegistrationVectorStatus();
-    clearRegistrationFaceBox();
 
 }
 
