@@ -649,6 +649,10 @@ th {
     .event-row{grid-template-columns:1fr 1fr;}
 }
 
+<style>
+.face-box-canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:3;}
+.monitor-video-wrap{overflow:hidden;}
+</style>
 </style>
 <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 </head>
@@ -934,6 +938,7 @@ th {
                             </div>
                             <div class="monitor-video-wrap">
                                 <video id="entryVideo" class="monitor-video" autoplay muted playsinline></video>
+                                <canvas id="entryFaceCanvas" class="face-box-canvas"></canvas>
                                 <div class="monitor-overlay" id="entryOverlay">
                                     Waiting for camera...
                                 </div>
@@ -952,6 +957,7 @@ th {
                             </div>
                             <div class="monitor-video-wrap">
                                 <video id="exitVideo" class="monitor-video" autoplay muted playsinline></video>
+                                <canvas id="exitFaceCanvas" class="face-box-canvas"></canvas>
                                 <div class="monitor-overlay" id="exitOverlay">
                                     Waiting for camera...
                                 </div>
@@ -2208,6 +2214,9 @@ let lastRecognition = {
 };
 let lastEventTime = {};
 let singleCameraRole = "entry";
+let registeredFaceCache = [];
+let registeredFaceCacheClassId = "";
+let lastFaceBox = { entry: null, exit: null };
 
 async function loadFaceModels() {
 
@@ -2721,6 +2730,9 @@ async function startMonitoring() {
             ).textContent = "STANDBY";
         }
 
+        // Load all registered face descriptors once. Do not read Firebase for every video frame.
+        await loadRegisteredFaces(true);
+
         monitoringActive = true;
 
         setMonitorStatus(
@@ -2873,207 +2885,179 @@ function beginMonitoringLoop() {
 
     if (!monitoringActive || document.hidden) return;
 
-    if (monitoringLoop) {
-        cancelAnimationFrame(monitoringLoop);
-    }
+    if (monitoringLoop) cancelAnimationFrame(monitoringLoop);
 
     const loop = async () => {
-
         if (!monitoringActive || document.hidden) return;
 
-        const mode =
-            document.getElementById(
-                "cameraMode"
-            ).value;
+        const mode = document.getElementById("cameraMode").value;
 
         if (mode === "single") {
-
-            const singleBusy =
-                cameraScanBusy[singleCameraRole];
-
-            if (!singleBusy) {
+            if (!cameraScanBusy[singleCameraRole]) {
                 await scanVideo(
                     singleCameraRole,
                     document.getElementById("entryVideo")
                 );
             }
-
         } else {
-
-            if (!cameraScanBusy.entry) {
-                await scanVideo(
-                    "entry",
-                    document.getElementById("entryVideo")
-                );
-            }
-
-            if (!cameraScanBusy.exit) {
-                await scanVideo(
-                    "exit",
-                    document.getElementById("exitVideo")
-                );
-            }
+            // Scan both cameras in parallel so one camera does not wait for the other.
+            await Promise.all([
+                !cameraScanBusy.entry
+                    ? scanVideo("entry", document.getElementById("entryVideo"))
+                    : Promise.resolve(),
+                !cameraScanBusy.exit
+                    ? scanVideo("exit", document.getElementById("exitVideo"))
+                    : Promise.resolve()
+            ]);
         }
 
         if (monitoringActive && !document.hidden) {
-            monitoringLoop =
-                requestAnimationFrame(loop);
+            monitoringLoop = requestAnimationFrame(loop);
         }
     };
 
-    monitoringLoop =
-        requestAnimationFrame(loop);
+    monitoringLoop = requestAnimationFrame(loop);
+}
+
+function clearFaceBox(role) {
+    const canvas = document.getElementById(role + "FaceCanvas");
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+function drawFaceBox(role, detection, matched = false) {
+    const video = document.getElementById(role + "Video");
+    const canvas = document.getElementById(role + "FaceCanvas");
+    if (!video || !canvas || !detection) return;
+
+    const rect = video.getBoundingClientRect();
+    const vw = video.videoWidth || rect.width;
+    const vh = video.videoHeight || rect.height;
+    if (!vw || !vh) return;
+
+    const displaySize = { width: rect.width, height: rect.height };
+    canvas.width = Math.max(1, Math.round(rect.width * devicePixelRatio));
+    canvas.height = Math.max(1, Math.round(rect.height * devicePixelRatio));
+    const ctx = canvas.getContext("2d");
+    ctx.setTransform(devicePixelRatio, 0, 0, devicePixelRatio, 0, 0);
+    ctx.clearRect(0, 0, rect.width, rect.height);
+
+    const resized = faceapi.resizeResults(detection, displaySize);
+    const box = resized.detection.box;
+
+    ctx.lineWidth = 4;
+    ctx.strokeStyle = matched ? "#22c55e" : "#f59e0b";
+    ctx.shadowColor = matched ? "rgba(34,197,94,.65)" : "rgba(245,158,11,.5)";
+    ctx.shadowBlur = 10;
+    ctx.strokeRect(box.x, box.y, box.width, box.height);
+    ctx.shadowBlur = 0;
+
+    if (matched) {
+        ctx.fillStyle = "rgba(22,163,74,.92)";
+        const label = "✓ VERIFIED";
+        ctx.font = "700 14px Arial";
+        const pad = 8;
+        const h = 28;
+        ctx.fillRect(box.x, Math.max(0, box.y - h), ctx.measureText(label).width + pad * 2, h);
+        ctx.fillStyle = "#fff";
+        ctx.fillText(label, box.x + pad, Math.max(18, box.y - 9));
+    }
+}
+
+async function loadRegisteredFaces(force = false) {
+    if (!monitoringClassId) {
+        registeredFaceCache = [];
+        registeredFaceCacheClassId = "";
+        return;
+    }
+    if (!force && registeredFaceCacheClassId === monitoringClassId) return;
+
+    const snapshot = await get(ref(db, "classes/" + monitoringClassId + "/students"));
+    registeredFaceCache = [];
+
+    if (snapshot.exists()) {
+        const students = snapshot.val();
+        for (const [studentId, student] of Object.entries(students)) {
+            const descriptors = [];
+            if (Array.isArray(student.faceDescriptor1) && student.faceDescriptor1.length) {
+                descriptors.push(new Float32Array(student.faceDescriptor1));
+            }
+            if (Array.isArray(student.faceDescriptor2) && student.faceDescriptor2.length) {
+                descriptors.push(new Float32Array(student.faceDescriptor2));
+            }
+            if (descriptors.length) {
+                registeredFaceCache.push({ id: studentId, ...student, descriptors });
+            }
+        }
+    }
+    registeredFaceCacheClassId = monitoringClassId;
 }
 
 async function scanVideo(role, video) {
-
-    if (!video || video.readyState < 3) return;
+    if (!video || video.readyState < 3 || !monitoringActive) return;
 
     cameraScanBusy[role] = true;
-
     try {
-
-        const result =
-            await faceapi
+        const result = await faceapi
             .detectSingleFace(
                 video,
                 new faceapi.TinyFaceDetectorOptions({
-                    inputSize: 320,
-                    scoreThreshold: 0.55
+                    inputSize: 160,
+                    scoreThreshold: 0.45
                 })
             )
             .withFaceLandmarks()
             .withFaceDescriptor();
 
         if (!result) {
-
-            updateDetectionText(
-                role,
-                "No face detected"
-            );
-
+            clearFaceBox(role);
+            updateDetectionText(role, "Scanning...");
             return;
         }
 
-        updateDetectionText(
-            role,
-            "Face detected. Verifying..."
-        );
+        updateDetectionText(role, "Face detected...");
+        drawFaceBox(role, result, false);
 
-        const student =
-            await matchRegisteredStudent(
-                result.descriptor
-            );
+        const student = await matchRegisteredStudent(result.descriptor);
 
         if (!student) {
-
-            updateDetectionText(
-                role,
-                "Unknown / unregistered face"
-            );
-
+            updateDetectionText(role, "Unknown / unregistered face");
             return;
         }
 
-        updateDetectionText(
-            role,
-            "Verified: " + student.name
-        );
+        drawFaceBox(role, result, true);
+        updateDetectionText(role, "✓ Verified: " + student.name);
 
-        await processAttendanceEvent(
-            role,
-            student
-        );
+        await processAttendanceEvent(role, student);
 
     } catch (error) {
-
-        console.error(
-            "Face scan " + role,
-            error
-        );
-
+        console.error("Face scan " + role, error);
     } finally {
-
         cameraScanBusy[role] = false;
     }
 }
 
 async function matchRegisteredStudent(descriptor) {
-
     if (!monitoringClassId) return null;
-
-    const snapshot =
-        await get(
-            ref(
-                db,
-                "classes/" +
-                monitoringClassId +
-                "/students"
-            )
-        );
-
-    if (!snapshot.exists()) return null;
-
-    const students =
-        snapshot.val();
+    await loadRegisteredFaces();
+    if (!registeredFaceCache.length) return null;
 
     let bestStudent = null;
     let bestDistance = Infinity;
 
-    for (
-        const [studentId, student]
-        of Object.entries(students)
-    ) {
-
-        const descriptors = [];
-
-        if (Array.isArray(student.faceDescriptor1)) {
-            descriptors.push(
-                new Float32Array(
-                    student.faceDescriptor1
-                )
-            );
-        }
-
-        if (Array.isArray(student.faceDescriptor2)) {
-            descriptors.push(
-                new Float32Array(
-                    student.faceDescriptor2
-                )
-            );
-        }
-
-        if (!descriptors.length) continue;
-
-        for (const known of descriptors) {
-
-            const distance =
-                faceapi.euclideanDistance(
-                    descriptor,
-                    known
-                );
-
+    for (const student of registeredFaceCache) {
+        for (const known of student.descriptors) {
+            const distance = faceapi.euclideanDistance(descriptor, known);
             if (distance < bestDistance) {
-
                 bestDistance = distance;
-
-                bestStudent = {
-                    id: studentId,
-                    ...student,
-                    distance
-                };
+                bestStudent = { ...student, distance };
             }
         }
     }
 
-    // Conservative threshold to reduce false matches.
-    if (
-        !bestStudent ||
-        bestDistance > 0.48
-    ) {
-        return null;
-    }
-
+    // Fast recognition with a still-conservative threshold.
+    if (!bestStudent || bestDistance > 0.50) return null;
     return bestStudent;
 }
 
