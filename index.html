@@ -654,6 +654,8 @@ th {
 .monitor-video-wrap{overflow:hidden;}
 </style>
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.4/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js"></script>
 </head>
 
@@ -1463,6 +1465,23 @@ th {
                     </div>
 
 
+                    <div style="margin-bottom:15px;padding:14px;border-radius:10px;background:#eff6ff;border:1px solid #bfdbfe;color:#1e3a8a;">
+                        <strong>Registration Photo Instructions</strong>
+                        <div style="margin-top:7px;font-size:13px;line-height:1.6;">
+                            Take <b>2 clear photos of the same student</b>.<br>
+                            • Face the camera directly and keep both eyes visible.<br>
+                            • Keep the face centered, about 40–80 cm from the camera.<br>
+                            • Use good lighting. Avoid very dark or backlit conditions.<br>
+                            • Remove mask, sunglasses or anything covering the face.<br>
+                            • Photo 1: normal front-facing view.<br>
+                            • Photo 2: slightly different natural expression or small head angle.<br>
+                            <b>The system will only save the photos if a face is detected.</b>
+                        </div>
+                        <div id="registrationFaceStatus" style="margin-top:8px;font-weight:700;color:#64748b;">
+                            Face check: waiting for Photo 1
+                        </div>
+                    </div>
+
                     <div class="camera-box">
 
                         <div class="camera-panel">
@@ -1674,11 +1693,7 @@ th {
                                     </th>
 
                                     <th>
-                                        Difference
-                                    </th>
-
-                                    <th>
-                                        Attendance Status
+                                        Status
                                     </th>
 
                                     <th>
@@ -1881,6 +1896,11 @@ let registrationCurrent = 1;
 let photo1Data = null;
 
 let photo2Data = null;
+
+// Descriptors are captured and verified at the same moment as each photo.
+// Save uses these verified descriptors directly, avoiding a second detection pass.
+let registrationDescriptor1 = null;
+let registrationDescriptor2 = null;
 
 let cameraStream = null;
 
@@ -2641,15 +2661,6 @@ async function startMonitoring() {
         return;
     }
 
-    if (
-        mode === "dual" &&
-        entryDeviceId === exitDeviceId
-    ) {
-        alert(
-            "Entry and Exit cameras must be different in Two Camera Mode."
-        );
-        return;
-    }
 
     localStorage.setItem(
         "smartAttendanceCameraConfig",
@@ -4048,23 +4059,26 @@ document
 .getElementById("capturePhoto1")
 .addEventListener(
     "click",
-    () => {
+    async () => {
 
         const video =
-            document
-            .getElementById("cameraVideo");
+            document.getElementById("cameraVideo");
 
         const canvas =
-            document
-            .getElementById("photoCanvas");
+            document.getElementById("photoCanvas");
 
+        if (!video.videoWidth || !video.videoHeight) {
+            alert("Camera is not ready. Wait for the live video and try again.");
+            return;
+        }
 
-        canvas.width =
-            video.videoWidth;
+        if (!faceModelsLoaded) {
+            const ready = await loadFaceModels();
+            if (!ready) return;
+        }
 
-        canvas.height =
-            video.videoHeight;
-
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
 
         canvas
         .getContext("2d")
@@ -4076,18 +4090,37 @@ document
             canvas.height
         );
 
+        const captured =
+            canvas.toDataURL("image/jpeg", 0.90);
 
-        photo1Data =
-            canvas.toDataURL(
-                "image/jpeg",
-                0.85
+        const descriptor =
+            await descriptorFromDataUrl(captured, {
+                scoreThreshold: 0.30,
+                inputSize: 416
+            });
+
+        const status =
+            document.getElementById("registrationFaceStatus");
+
+        if (!descriptor) {
+            photo1Data = null;
+            status.textContent =
+                "Face check: FAILED. Move closer, face the camera and improve lighting.";
+            status.style.color = "#b91c1c";
+            alert(
+                "No clear face detected in Photo 1. Keep the face centered and clearly visible, then capture again."
             );
+            return;
+        }
 
+        photo1Data = captured;
+        registrationDescriptor1 = descriptor;
 
-        alert(
-            "Photo 1 captured."
-        );
+        status.textContent =
+            "Photo 1: FACE DETECTED ✓  Now capture Photo 2.";
+        status.style.color = "#15803d";
 
+        alert("Photo 1 accepted. Face detected successfully.");
     }
 );
 
@@ -4100,23 +4133,26 @@ document
 .getElementById("capturePhoto2")
 .addEventListener(
     "click",
-    () => {
+    async () => {
 
         const video =
-            document
-            .getElementById("cameraVideo");
+            document.getElementById("cameraVideo");
 
         const canvas =
-            document
-            .getElementById("photoCanvas");
+            document.getElementById("photoCanvas");
 
+        if (!video.videoWidth || !video.videoHeight) {
+            alert("Camera is not ready. Wait for the live video and try again.");
+            return;
+        }
 
-        canvas.width =
-            video.videoWidth;
+        if (!faceModelsLoaded) {
+            const ready = await loadFaceModels();
+            if (!ready) return;
+        }
 
-        canvas.height =
-            video.videoHeight;
-
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
 
         canvas
         .getContext("2d")
@@ -4128,24 +4164,41 @@ document
             canvas.height
         );
 
+        const captured =
+            canvas.toDataURL("image/jpeg", 0.90);
 
-        photo2Data =
-            canvas.toDataURL(
-                "image/jpeg",
-                0.85
+        const descriptor =
+            await descriptorFromDataUrl(captured, {
+                scoreThreshold: 0.30,
+                inputSize: 416
+            });
+
+        const status =
+            document.getElementById("registrationFaceStatus");
+
+        if (!descriptor) {
+            photo2Data = null;
+            status.textContent =
+                "Face check: FAILED. Retake Photo 2 with the face clearly visible.";
+            status.style.color = "#b91c1c";
+            alert(
+                "No clear face detected in Photo 2. Keep the face centered and clearly visible, then capture again."
             );
+            return;
+        }
 
+        photo2Data = captured;
+        registrationDescriptor2 = descriptor;
 
         document
         .getElementById("photoPreview")
-        .src =
-            photo2Data;
+        .src = photo2Data;
 
+        status.textContent =
+            "Photo 1: FACE DETECTED ✓   Photo 2: FACE DETECTED ✓   Ready to save.";
+        status.style.color = "#15803d";
 
-        alert(
-            "Photo 2 captured."
-        );
-
+        alert("Photo 2 accepted. Face detected successfully.");
     }
 );
 
@@ -4217,15 +4270,16 @@ document
                 }
             }
 
-            const descriptor1 =
-                await descriptorFromDataUrl(photo1Data);
-
-            const descriptor2 =
-                await descriptorFromDataUrl(photo2Data);
+            // IMPORTANT: do not run face detection again here.
+            // Both descriptors were already detected and verified when
+            // Photo 1 and Photo 2 were captured. Re-running detection
+            // was causing intermittent false failures during SAVE.
+            const descriptor1 = registrationDescriptor1;
+            const descriptor2 = registrationDescriptor2;
 
             if (!descriptor1 || !descriptor2) {
                 throw new Error(
-                    "A clear face was not detected in both registration photos. Retake the photos."
+                    "Please capture and accept both face photos before saving the student."
                 );
             }
 
@@ -4358,19 +4412,26 @@ document
 
 
 
-async function descriptorFromDataUrl(dataUrl) {
+async function descriptorFromDataUrl(
+    dataUrl,
+    options = {}
+) {
 
     const image =
         await faceapi.fetchImage(dataUrl);
+
+    const detectorOptions =
+        new faceapi.TinyFaceDetectorOptions({
+            inputSize: options.inputSize || 416,
+            scoreThreshold:
+                options.scoreThreshold ?? 0.30
+        });
 
     const result =
         await faceapi
         .detectSingleFace(
             image,
-            new faceapi.TinyFaceDetectorOptions({
-                inputSize: 320,
-                scoreThreshold: 0.55
-            })
+            detectorOptions
         )
         .withFaceLandmarks()
         .withFaceDescriptor();
@@ -4405,6 +4466,17 @@ function clearStudentForm() {
     photo1Data = null;
 
     photo2Data = null;
+    registrationDescriptor1 = null;
+    registrationDescriptor2 = null;
+
+    const status =
+        document.getElementById("registrationFaceStatus");
+
+    if (status) {
+        status.textContent =
+            "Face check: waiting for Photo 1";
+        status.style.color = "#64748b";
+    }
 
 }
 
@@ -4645,152 +4717,225 @@ async function displayAttendance(
 
     const table =
         document
-        .getElementById("attendanceTable");
+        .getElementById(
+            "attendanceTable"
+        );
+
 
     table.innerHTML = "";
+
 
     try {
 
         const classSnapshot =
             await get(
-                ref(db, "classes/" + classId)
+                ref(
+                    db,
+                    "classes/" +
+                    classId
+                )
             );
 
-        if (!classSnapshot.exists()) {
+
+        if (
+            !classSnapshot.exists()
+        ) {
+
             return;
         }
 
-        const classData = classSnapshot.val();
+
+        const classData =
+            classSnapshot.val();
+
 
         const attendanceSnapshot =
             await get(
                 ref(
                     db,
-                    "attendance/" + classId + "/" + date
+                    "attendance/" +
+                    classId +
+                    "/" +
+                    date
                 )
             );
+
 
         const attendance =
             attendanceSnapshot.exists()
                 ? attendanceSnapshot.val()
                 : {};
 
-        const students = classData.students || {};
 
-        Object.entries(students).forEach(
+        const students =
+            classData.students || {};
+
+
+        Object.entries(students)
+        .forEach(
             ([studentId, student]) => {
 
                 const record =
-                    attendance[studentId] || {};
+                    attendance[studentId] ||
+                    {};
 
-                const sessions = record.sessions || {};
-                const sessionEntries = Object.entries(sessions);
+
+                const sessions =
+                    record.sessions ||
+                    {};
+
 
                 let totalSeconds = 0;
-                let hasAttendance = false;
-                let hasOpenSession = false;
+
                 let sessionText = [];
 
-                sessionEntries.forEach(
-                    ([sessionId, session]) => {
+                let hasOpenSession = false;
 
-                        if (!session || !session.in) {
-                            return;
-                        }
 
-                        hasAttendance = true;
+                Object.values(sessions)
+                .forEach(
+                    session => {
+
+                        if (!session || !session.in) return;
 
                         const inTime = new Date(session.in);
-                        let outTime = null;
-                        let seconds = 0;
 
                         if (session.out) {
-                            outTime = new Date(session.out);
-                            seconds = Math.max(
+
+                            const outTime = new Date(session.out);
+
+                            const seconds = Math.max(
                                 0,
                                 (outTime - inTime) / 1000
                             );
+
                             totalSeconds += seconds;
-                        } else {
-                            hasOpenSession = true;
-                            seconds = Math.max(
-                                0,
-                                (Date.now() - inTime) / 1000
+
+                            sessionText.push(
+                                formatTime(inTime) +
+                                " - " +
+                                formatTime(outTime) +
+                                " (" + formatDuration(seconds) + ")"
                             );
+
+                        } else {
+
+                            hasOpenSession = true;
+
+                            const liveSeconds = Math.max(
+                                0,
+                                (Date.now() - inTime.getTime()) / 1000
+                            );
+
+                            sessionText.push(
+                                formatTime(inTime) +
+                                " - CURRENTLY INSIDE (" +
+                                formatDuration(liveSeconds) +
+                                ")"
+                            );
+
                         }
 
-                        const durationMinutes = Math.floor(seconds / 60);
-                        const durationSeconds = Math.floor(seconds % 60);
-
-                        sessionText.push(
-                            "<div style=\"margin-bottom:6px;\">" +
-                            "<strong>Session " +
-                            escapeHtml(sessionId.slice(-5)) +
-                            "</strong><br>" +
-                            "IN: " +
-                            formatTime(inTime) +
-                            " | OUT: " +
-                            (outTime ? formatTime(outTime) : "Still Inside") +
-                            " | Duration: " +
-                            durationMinutes +
-                            "m " +
-                            durationSeconds +
-                            "s" +
-                            "</div>"
-                        );
                     }
                 );
 
-                const totalMinutes = Math.floor(totalSeconds / 60);
-                const totalHours = Math.floor(totalMinutes / 60);
-                const remainingMinutes = totalMinutes % 60;
 
-                const required = Number(
-                    classData.minimumMinutes || 0
-                );
+                const totalMinutes =
+                    Math.floor(
+                        totalSeconds / 60
+                    );
 
-                // IMPORTANT:
-                // The system never automatically marks a student ABSENT.
-                // Any student with an IN record is retained as attended,
-                // even when the total time is below the minimum requirement.
-                let status = "Not Recorded";
-                let statusClass = "status-absent";
+
+                const required =
+                    Number(
+                        classData.minimumMinutes ||
+                        0
+                    );
+
+
+                // Never automatically mark a student Absent.
+                // The system records facts only: no record, currently inside,
+                // below the configured minimum, or requirement met.
+                let status =
+                    "NOT RECORDED";
+
+                let statusClass =
+                    "status-absent";
 
                 if (hasOpenSession) {
-                    status = "Currently Inside";
-                    statusClass = "status-present";
-                } else if (hasAttendance && totalMinutes >= required) {
-                    status = "Requirement Met";
-                    statusClass = "status-present";
-                } else if (hasAttendance) {
-                    status = "Below Minimum";
-                    statusClass = "status-short";
+
+                    status =
+                        "Currently Inside";
+
+                    statusClass =
+                        "status-present";
+
+                }
+                else if (totalMinutes >= required && required > 0) {
+
+                    status =
+                        "Requirement Met";
+
+                    statusClass =
+                        "status-present";
+
+                }
+                else if (totalMinutes > 0) {
+
+                    status =
+                        "Below Minimum";
+
+                    statusClass =
+                        "status-short";
+
                 }
 
-                const difference =
-                    required > totalMinutes
-                        ? (required - totalMinutes) + " min short"
-                        : (totalMinutes - required) + " min extra";
 
-                const row = document.createElement("tr");
+                const row =
+                    document
+                    .createElement("tr");
+
 
                 row.innerHTML = `
-                    <td>${escapeHtml(student.enrollmentNo || "")}</td>
-                    <td>${escapeHtml(student.rollNo || "")}</td>
-                    <td>${escapeHtml(student.name || "")}</td>
+
                     <td>
-                        ${sessionText.length ? sessionText.join("") : "-"}
+                        ${escapeHtml(student.enrollmentNo || "")}
                     </td>
+
                     <td>
-                        ${totalHours > 0 ? totalHours + " hr " : ""}${remainingMinutes} min
+                        ${escapeHtml(student.rollNo || "")}
                     </td>
-                    <td>${required} min</td>
-                    <td>${difference}</td>
+
                     <td>
+                        ${escapeHtml(student.name || "")}
+                    </td>
+
+                    <td>
+                        ${
+                            sessionText.length
+                            ?
+                            sessionText.join("<br>")
+                            :
+                            "-"
+                        }
+                    </td>
+
+                    <td>
+                        ${formatDuration(totalSeconds)}
+                    </td>
+
+                    <td>
+                        ${required} min
+                    </td>
+
+                    <td>
+
                         <span class="status ${statusClass}">
                             ${status}
                         </span>
+
                     </td>
+
                     <td>
                         <button
                             class="btn btn-secondary"
@@ -4799,15 +4944,22 @@ async function displayAttendance(
                             EDIT
                         </button>
                     </td>
+
                 `;
 
+
                 table.appendChild(row);
+
             }
         );
 
+
     } catch(error) {
 
-        console.error("Attendance error:", error);
+        console.error(
+            "Attendance error:",
+            error
+        );
 
     }
 
@@ -4937,39 +5089,217 @@ document
     async () => {
 
         const classId =
-            document
-            .getElementById(
-                "reportClassSelect"
-            )
-            .value;
+            document.getElementById("reportClassSelect").value;
 
         const date =
-            document
-            .getElementById(
-                "reportDate"
-            )
-            .value;
+            document.getElementById("reportDate").value;
 
-
-        if (
-            !classId ||
-            !date
-        ) {
-
-            alert(
-                "Select classroom and date."
-            );
-
+        if (!classId || !date) {
+            alert("Select classroom and date.");
             return;
         }
 
+        try {
+            const classSnap = await get(
+                ref(db, "classes/" + classId)
+            );
 
-        alert(
-            "Report generation is connected to the attendance data. PDF generation can now be added using jsPDF."
-        );
+            if (!classSnap.exists()) {
+                alert("Classroom not found.");
+                return;
+            }
 
+            const classData = classSnap.val();
+
+            const attendanceSnap = await get(
+                ref(db, "attendance/" + classId + "/" + date)
+            );
+
+            const attendance = attendanceSnap.exists()
+                ? attendanceSnap.val()
+                : {};
+
+            const rows = [];
+            const students = classData.students || {};
+
+            Object.entries(students).forEach(([studentId, student]) => {
+                const record = attendance[studentId] || {};
+                const sessions = record.sessions || {};
+                let totalSeconds = 0;
+                let sessionCount = 0;
+
+                Object.values(sessions).forEach(session => {
+                    if (!session || !session.in) return;
+
+                    const inDate = new Date(session.in);
+                    const outDate = session.out
+                        ? new Date(session.out)
+                        : null;
+
+                    let seconds = 0;
+                    if (outDate) {
+                        seconds = Math.max(0, (outDate - inDate) / 1000);
+                        totalSeconds += seconds;
+                    }
+
+                    sessionCount++;
+
+                    rows.push({
+                        enrollment: student.enrollmentNo || "",
+                        roll: student.rollNo || "",
+                        name: student.name || "",
+                        session: sessionCount,
+                        inTime: formatDateTime(inDate),
+                        outTime: outDate ? formatDateTime(outDate) : "STILL INSIDE",
+                        duration: outDate ? formatDuration(seconds) : "OPEN",
+                        total: ""
+                    });
+                });
+
+                const totalMinutes = Math.floor(totalSeconds / 60);
+                const required = Number(classData.minimumMinutes || 0);
+
+                let status = "NOT RECORDED";
+                if (sessionCount > 0 && Object.values(sessions).some(x => x && x.in && !x.out)) {
+                    status = "CURRENTLY INSIDE";
+                } else if (totalMinutes >= required && required > 0) {
+                    status = "REQUIREMENT MET";
+                } else if (totalMinutes > 0) {
+                    status = "BELOW MINIMUM";
+                }
+
+                // Add a row even when there is no attendance, so every registered
+                // student appears in the class-wise report.
+                if (!sessionCount) {
+                    rows.push({
+                        enrollment: student.enrollmentNo || "",
+                        roll: student.rollNo || "",
+                        name: student.name || "",
+                        session: "-",
+                        inTime: "-",
+                        outTime: "-",
+                        duration: "-",
+                        total: formatDuration(totalSeconds),
+                        status
+                    });
+                } else {
+                    // Put total/status only on the last session row for readability.
+                    const last = rows[rows.length - 1];
+                    last.total = formatDuration(totalSeconds);
+                    last.status = status;
+                }
+            });
+
+            if (!rows.length) {
+                alert("No registered students found in this classroom.");
+                return;
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ orientation: "landscape", unit: "mm", format: "a4" });
+
+            const title = classData.labName || "Smart Lab Attendance";
+            doc.setFontSize(16);
+            doc.text(title, 14, 14);
+            doc.setFontSize(9);
+            doc.text("Class-wise Attendance Report | Date: " + date, 14, 21);
+            doc.text(
+                "Department: " + (classData.department || "") +
+                " | Group: " + (classData.group || "") +
+                " | Semester: " + (classData.semester || "") +
+                " | Required: " + Number(classData.minimumMinutes || 0) + " min",
+                14,
+                27
+            );
+
+            const body = rows.map(r => [
+                r.enrollment,
+                r.roll,
+                r.name,
+                r.session,
+                r.inTime,
+                r.outTime,
+                r.duration,
+                r.total,
+                r.status || ""
+            ]);
+
+            doc.autoTable({
+                startY: 32,
+                head: [[
+                    "Enrollment", "Roll", "Student Name", "Session",
+                    "IN", "OUT", "Session Duration", "Total Lab Time", "Status"
+                ]],
+                body,
+                theme: "grid",
+                styles: {
+                    fontSize: 7,
+                    cellPadding: 2,
+                    overflow: "linebreak"
+                },
+                headStyles: {
+                    fontSize: 7,
+                    fontStyle: "bold"
+                },
+                columnStyles: {
+                    0: { cellWidth: 25 },
+                    1: { cellWidth: 16 },
+                    2: { cellWidth: 42 },
+                    3: { cellWidth: 12 },
+                    4: { cellWidth: 28 },
+                    5: { cellWidth: 28 },
+                    6: { cellWidth: 27 },
+                    7: { cellWidth: 27 },
+                    8: { cellWidth: 30 }
+                },
+                didDrawPage: data => {
+                    const page = doc.internal.getNumberOfPages();
+                    doc.setFontSize(7);
+                    doc.text(
+                        "Smart Lab Attendance System | Page " + page,
+                        14,
+                        doc.internal.pageSize.getHeight() - 7
+                    );
+                }
+            });
+
+            const safeLab = String(classData.labName || "Lab")
+                .replace(/[^a-z0-9_-]+/gi, "_")
+                .replace(/^_+|_+$/g, "");
+
+            doc.save(
+                "Attendance_" + safeLab + "_" + date + ".pdf"
+            );
+
+        } catch (error) {
+            console.error("PDF report error:", error);
+            alert("Unable to generate PDF: " + error.message);
+        }
     }
 );
+
+function formatDuration(seconds) {
+    const total = Math.max(0, Math.floor(Number(seconds) || 0));
+    const h = Math.floor(total / 3600);
+    const m = Math.floor((total % 3600) / 60);
+    const sec = total % 60;
+    return h + "h " + String(m).padStart(2, "0") + "m " + String(sec).padStart(2, "0") + "s";
+}
+
+function formatDateTime(date) {
+    if (!(date instanceof Date) || Number.isNaN(date.getTime())) return "-";
+    return date.toLocaleString("en-IN", {
+        timeZone: "Asia/Kolkata",
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+        hour12: false
+    });
+}
+
 
 
 /* =========================================================
