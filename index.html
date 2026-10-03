@@ -2302,6 +2302,8 @@ let lastRecognition = {
     exit: {}
 };
 let lastEventTime = {};
+let lastRecognitionSoundTime = { entry: 0, exit: 0 };
+let lastUnknownSoundTime = { entry: 0, exit: 0 };
 let singleCameraRole = "entry";
 let registeredFaceCache = [];
 let registeredFaceCacheClassId = "";
@@ -3076,6 +3078,28 @@ async function loadRegisteredFaces(force = false) {
     registeredFaceCacheClassId = monitoringClassId;
 }
 
+function speakAttendanceSound(message, role, type) {
+    if (!window.speechSynthesis) return;
+
+    const now = Date.now();
+    const bucket = type === "fail"
+        ? lastUnknownSoundTime
+        : lastRecognitionSoundTime;
+    const cooldown = type === "fail" ? 3000 : 2500;
+
+    if (now - bucket[role] < cooldown) return;
+    bucket[role] = now;
+
+    window.speechSynthesis.cancel();
+
+    const utterance = new SpeechSynthesisUtterance(message);
+    utterance.lang = "en-US";
+    utterance.rate = 0.95;
+    utterance.pitch = 1;
+    utterance.volume = 1;
+    window.speechSynthesis.speak(utterance);
+}
+
 async function scanVideo(role, video) {
     if (!video || video.readyState < 3 || !monitoringActive) return;
 
@@ -3106,6 +3130,7 @@ async function scanVideo(role, video) {
         if (!student) {
             updateDetectionText(role, "Unknown / unregistered face - captured for admin");
             await captureUnknownFace(role, video, result);
+            speakAttendanceSound("Recognition fail", role, "fail");
             return;
         }
 
@@ -3327,6 +3352,8 @@ async function processAttendanceEvent(
             "success"
         );
 
+        speakAttendanceSound("Check in successful", role, "success");
+
         updateDashboard();
 
         // In single-camera mode, automatically change to EXIT
@@ -3407,6 +3434,8 @@ async function processAttendanceEvent(
             formatTime(new Date(now)),
             "success"
         );
+
+        speakAttendanceSound("Check out successful", role, "success");
 
         updateDashboard();
 
