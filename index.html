@@ -1677,11 +1677,15 @@ th {
                                     </th>
 
                                     <th>
-                                        Sessions
+                                        IN
                                     </th>
 
                                     <th>
-                                        Total Time
+                                        OUT
+                                    </th>
+
+                                    <th>
+                                        Total Recorded Time
                                     </th>
 
                                     <th>
@@ -4815,215 +4819,78 @@ async function displayAttendance(
     date
 ) {
 
-    const table =
-        document
-        .getElementById(
-            "attendanceTable"
-        );
-
-
+    const table = document.getElementById("attendanceTable");
     table.innerHTML = "";
 
-
     try {
+        const classSnapshot = await get(ref(db, "classes/" + classId));
+        if (!classSnapshot.exists()) return;
 
-        const classSnapshot =
-            await get(
-                ref(
-                    db,
-                    "classes/" +
-                    classId
-                )
-            );
-
-
-        if (
-            !classSnapshot.exists()
-        ) {
-
-            return;
-        }
-
-
-        const classData =
-            classSnapshot.val();
-
-
-        const attendanceSnapshot =
-            await get(
-                ref(
-                    db,
-                    "attendance/" +
-                    classId +
-                    "/" +
-                    date
-                )
-            );
-
-
-        const attendance =
-            attendanceSnapshot.exists()
-                ? attendanceSnapshot.val()
-                : {};
-
-
-        const students =
-            classData.students || {};
-
-
-        Object.entries(students)
-        .forEach(
-            ([studentId, student]) => {
-
-                const record =
-                    attendance[studentId] ||
-                    {};
-
-
-                const sessions =
-                    record.sessions ||
-                    {};
-
-
-                let totalSeconds = 0;
-
-                let sessionText = [];
-
-                let hasOpenSession = false;
-
-
-                Object.values(sessions)
-                .forEach(
-                    session => {
-
-                        if (!session || !session.in) return;
-
-                        const inTime = new Date(session.in);
-
-                        if (session.out) {
-
-                            const outTime = new Date(session.out);
-
-                            const seconds = Math.max(
-                                0,
-                                (outTime - inTime) / 1000
-                            );
-
-                            totalSeconds += seconds;
-
-                            sessionText.push(
-                                formatTime(inTime) +
-                                " - " +
-                                formatTime(outTime) +
-                                " (" + formatDuration(seconds) + ")"
-                            );
-
-                        } else {
-
-                            hasOpenSession = true;
-
-                            const liveSeconds = Math.max(
-                                0,
-                                (Date.now() - inTime.getTime()) / 1000
-                            );
-
-                            sessionText.push(
-                                formatTime(inTime) +
-                                " - CURRENTLY INSIDE (" +
-                                formatDuration(liveSeconds) +
-                                ")"
-                            );
-
-                        }
-
-                    }
-                );
-
-
-                const isCancelled = record.cancelled === true;
-
-                // Attendance is purely event-based. There is NO minimum-time
-                // requirement and no automatic absent calculation.
-                let status = isCancelled
-                    ? "CANCELLED"
-                    : (hasOpenSession ? "CURRENTLY INSIDE" : (sessionText.length ? "RECORDED" : "NOT RECORDED"));
-
-                let statusClass = isCancelled
-                    ? "status-absent"
-                    : (sessionText.length ? "status-present" : "status-absent");
-
-
-                const row =
-                    document
-                    .createElement("tr");
-
-
-                row.innerHTML = `
-
-                    <td>
-                        ${escapeHtml(student.enrollmentNo || "")}
-                    </td>
-
-                    <td>
-                        ${escapeHtml(student.rollNo || "")}
-                    </td>
-
-                    <td>
-                        ${escapeHtml(student.name || "")}
-                    </td>
-
-                    <td>
-                        ${
-                            sessionText.length
-                            ?
-                            sessionText.join("<br>")
-                            :
-                            "-"
-                        }
-                    </td>
-
-                    <td>
-                        ${formatDuration(totalSeconds)}
-                    </td>
-
-                    <td>
-
-                        <span class="status ${statusClass}">
-                            ${status}
-                        </span>
-                        ${isCancelled ? `<br><small>${escapeHtml(record.cancelReason || "")}</small>` : ""}
-
-                    </td>
-
-                    <td>
-                        <button
-                            class="btn btn-secondary"
-                            onclick="editAttendance('${classId}','${date}','${studentId}')"
-                        >
-                            EDIT
-                        </button>
-                    </td>
-
-                `;
-
-
-                table.appendChild(row);
-
-            }
+        const classData = classSnapshot.val();
+        const attendanceSnapshot = await get(
+            ref(db, "attendance/" + classId + "/" + date)
         );
+        const attendance = attendanceSnapshot.exists()
+            ? attendanceSnapshot.val()
+            : {};
+        const students = classData.students || {};
 
+        Object.entries(students).forEach(([studentId, student]) => {
+            const record = attendance[studentId] || {};
+            const sessions = record.sessions || {};
+            const inTimes = [];
+            const outTimes = [];
+            let totalSeconds = 0;
+            let hasOpenSession = false;
+
+            Object.values(sessions).forEach(session => {
+                if (!session || !session.in) return;
+
+                const inTime = new Date(session.in);
+                inTimes.push(formatTime(inTime));
+
+                if (session.out) {
+                    const outTime = new Date(session.out);
+                    outTimes.push(formatTime(outTime));
+                    totalSeconds += Math.max(0, (outTime - inTime) / 1000);
+                } else {
+                    hasOpenSession = true;
+                    outTimes.push("STILL INSIDE");
+                    totalSeconds += Math.max(0, (Date.now() - inTime.getTime()) / 1000);
+                }
+            });
+
+            const isCancelled = record.cancelled === true;
+            const status = isCancelled
+                ? "CANCELLED"
+                : (hasOpenSession ? "CURRENTLY INSIDE" : (inTimes.length ? "RECORDED" : "NOT RECORDED"));
+            const statusClass = isCancelled
+                ? "status-absent"
+                : (inTimes.length ? "status-present" : "status-absent");
+
+            const row = document.createElement("tr");
+            row.innerHTML = `
+                <td>${escapeHtml(student.enrollmentNo || "")}</td>
+                <td>${escapeHtml(student.rollNo || "")}</td>
+                <td>${escapeHtml(student.name || "")}</td>
+                <td>${inTimes.length ? inTimes.join("<br>") : "-"}</td>
+                <td>${outTimes.length ? outTimes.join("<br>") : "-"}</td>
+                <td>${formatDuration(totalSeconds)}</td>
+                <td>
+                    <span class="status ${statusClass}">${status}</span>
+                    ${isCancelled ? `<br><small>${escapeHtml(record.cancelReason || "")}</small>` : ""}
+                </td>
+                <td>
+                    <button class="btn btn-secondary" onclick="editAttendance('${classId}','${date}','${studentId}')">EDIT</button>
+                </td>
+            `;
+            table.appendChild(row);
+        });
 
     } catch(error) {
-
-        console.error(
-            "Attendance error:",
-            error
-        );
-
+        console.error("Attendance error:", error);
     }
-
 }
-
 
 /* =========================================================
    EDIT ATTENDANCE
@@ -5286,68 +5153,57 @@ document
 
             const rows = [];
             const students = classData.students || {};
+            const minimumMinutes = Number(classData.minimumMinutes || 0);
 
+            // ONE ROW PER STUDENT. IN and OUT are separate columns.
             Object.entries(students).forEach(([studentId, student]) => {
                 const record = attendance[studentId] || {};
                 const sessions = record.sessions || {};
                 let totalSeconds = 0;
-                let sessionCount = 0;
+                let hasOpenSession = false;
+                const inLines = [];
+                const outLines = [];
 
                 Object.values(sessions).forEach(session => {
                     if (!session || !session.in) return;
 
                     const inDate = new Date(session.in);
-                    const outDate = session.out
-                        ? new Date(session.out)
-                        : null;
+                    inLines.push(formatDateTime(inDate));
 
-                    let seconds = 0;
-                    if (outDate) {
-                        seconds = Math.max(0, (outDate - inDate) / 1000);
-                        totalSeconds += seconds;
+                    if (session.out) {
+                        const outDate = new Date(session.out);
+                        outLines.push(formatDateTime(outDate));
+                        totalSeconds += Math.max(0, (outDate - inDate) / 1000);
+                    } else {
+                        hasOpenSession = true;
+                        outLines.push("STILL INSIDE");
+                        totalSeconds += Math.max(
+                            0,
+                            (Date.now() - inDate.getTime()) / 1000
+                        );
                     }
-
-                    sessionCount++;
-
-                    rows.push({
-                        enrollment: student.enrollmentNo || "",
-                        roll: student.rollNo || "",
-                        name: student.name || "",
-                        session: sessionCount,
-                        inTime: formatDateTime(inDate),
-                        outTime: outDate ? formatDateTime(outDate) : "STILL INSIDE",
-                        duration: outDate ? formatDuration(seconds) : "OPEN",
-                        total: ""
-                    });
                 });
 
-                const isCancelled = record.cancelled === true;
-                let status = isCancelled
-                    ? "CANCELLED"
-                    : (sessionCount > 0
-                        ? (Object.values(sessions).some(x => x && x.in && !x.out) ? "CURRENTLY INSIDE" : "RECORDED")
-                        : "NOT RECORDED");
-
-                // Add a row even when there is no attendance, so every registered
-                // student appears in the class-wise report.
-                if (!sessionCount) {
-                    rows.push({
-                        enrollment: student.enrollmentNo || "",
-                        roll: student.rollNo || "",
-                        name: student.name || "",
-                        session: "-",
-                        inTime: "-",
-                        outTime: "-",
-                        duration: "-",
-                        total: formatDuration(totalSeconds),
-                        status
-                    });
-                } else {
-                    // Put total/status only on the last session row for readability.
-                    const last = rows[rows.length - 1];
-                    last.total = formatDuration(totalSeconds);
-                    last.status = status;
+                // Minimum time is ONLY a PDF classification rule.
+                // It never blocks or changes camera attendance records.
+                let status = "NOT";
+                if (record.cancelled === true) {
+                    status = "CANCELLED";
+                } else if (inLines.length && minimumMinutes > 0) {
+                    status = (totalSeconds / 60) >= minimumMinutes ? "OK" : "NOT";
+                } else if (inLines.length && minimumMinutes <= 0) {
+                    status = "RECORDED";
                 }
+
+                rows.push({
+                    enrollment: student.enrollmentNo || "",
+                    roll: student.rollNo || "",
+                    name: student.name || "",
+                    in: inLines.length ? inLines.join("\n") : "-",
+                    out: outLines.length ? outLines.join("\n") : "-",
+                    total: formatDuration(totalSeconds),
+                    status
+                });
             });
 
             if (!rows.length) {
@@ -5376,10 +5232,8 @@ document
                 r.enrollment,
                 r.roll,
                 r.name,
-                r.session,
-                r.inTime,
-                r.outTime,
-                r.duration,
+                r.in,
+                r.out,
                 r.total,
                 r.status || ""
             ]);
@@ -5387,8 +5241,8 @@ document
             doc.autoTable({
                 startY: 32,
                 head: [[
-                    "Enrollment", "Roll", "Student Name", "Session",
-                    "IN", "OUT", "Session Duration", "Total Lab Time", "Status"
+                    "Enrollment", "Roll", "Student Name", "IN", "OUT",
+                    "Total Lab Time", "Status"
                 ]],
                 body,
                 theme: "grid",
@@ -5402,15 +5256,13 @@ document
                     fontStyle: "bold"
                 },
                 columnStyles: {
-                    0: { cellWidth: 25 },
-                    1: { cellWidth: 16 },
-                    2: { cellWidth: 42 },
-                    3: { cellWidth: 12 },
-                    4: { cellWidth: 28 },
-                    5: { cellWidth: 28 },
-                    6: { cellWidth: 27 },
-                    7: { cellWidth: 27 },
-                    8: { cellWidth: 30 }
+                    0: { cellWidth: 28 },
+                    1: { cellWidth: 18 },
+                    2: { cellWidth: 48 },
+                    3: { cellWidth: 55 },
+                    4: { cellWidth: 55 },
+                    5: { cellWidth: 30 },
+                    6: { cellWidth: 30 }
                 },
                 didDrawPage: data => {
                     const page = doc.internal.getNumberOfPages();
