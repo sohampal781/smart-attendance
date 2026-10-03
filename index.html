@@ -2304,6 +2304,7 @@ let lastRecognition = {
 let lastEventTime = {};
 let lastRecognitionSoundTime = { entry: 0, exit: 0 };
 let lastUnknownSoundTime = { entry: 0, exit: 0 };
+let lastCancellationSoundTime = { cancel: 0 };
 let singleCameraRole = "entry";
 let registeredFaceCache = [];
 let registeredFaceCacheClassId = "";
@@ -3084,8 +3085,10 @@ function speakAttendanceSound(message, role, type) {
     const now = Date.now();
     const bucket = type === "fail"
         ? lastUnknownSoundTime
-        : lastRecognitionSoundTime;
-    const cooldown = type === "fail" ? 3000 : 2500;
+        : type === "cancel"
+            ? lastCancellationSoundTime
+            : lastRecognitionSoundTime;
+    const cooldown = type === "fail" ? 3000 : type === "cancel" ? 1500 : 2500;
 
     if (now - bucket[role] < cooldown) return;
     bucket[role] = now;
@@ -5231,7 +5234,8 @@ document
                     in: inLines.length ? inLines.join("\n") : "-",
                     out: outLines.length ? outLines.join("\n") : "-",
                     total: formatDuration(totalSeconds),
-                    status
+                    status,
+                    reason: record.cancelled === true ? (record.cancelReason || "") : ""
                 });
             });
 
@@ -5264,14 +5268,15 @@ document
                 r.in,
                 r.out,
                 r.total,
-                r.status || ""
+                r.status || "",
+                r.reason || "-"
             ]);
 
             doc.autoTable({
                 startY: 32,
                 head: [[
                     "Enrollment", "Roll", "Student Name", "IN", "OUT",
-                    "Total Lab Time", "Status"
+                    "Total Lab Time", "Status", "Cancellation Reason"
                 ]],
                 body,
                 theme: "grid",
@@ -5285,13 +5290,14 @@ document
                     fontStyle: "bold"
                 },
                 columnStyles: {
-                    0: { cellWidth: 28 },
-                    1: { cellWidth: 18 },
-                    2: { cellWidth: 48 },
-                    3: { cellWidth: 55 },
-                    4: { cellWidth: 55 },
-                    5: { cellWidth: 30 },
-                    6: { cellWidth: 30 }
+                    0: { cellWidth: 25 },
+                    1: { cellWidth: 14 },
+                    2: { cellWidth: 42 },
+                    3: { cellWidth: 45 },
+                    4: { cellWidth: 45 },
+                    5: { cellWidth: 24 },
+                    6: { cellWidth: 20 },
+                    7: { cellWidth: 40 }
                 },
                 didDrawPage: data => {
                     const page = doc.internal.getNumberOfPages();
